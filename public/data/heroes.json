@@ -20,7 +20,7 @@
     "bio": "Молодой князь, сын Николая Болконского. Невысокий человек с благородным лицом; честолюбив, немногословен и сдержан, обладает несгибаемой волей. Пренебрегает светом, мечтая о военной славе. Человек высоких моральных ценностей, для которого долг и честь — превыше всего. Полюбив Наташу Ростову, надеется на счастье, но умирает после тяжёлого ранения.",
     "links": {
       "relatives": ["pierre-bezukhov", "natasha-rostova", "nikolai-bolkonsky", "maria-bolkonskaya"],
-      "events": ["soiree-anna-pavlovna", "austerlitz-battle", "borodino-battle", "natasha-and-andrei-engagement"]
+      "events": ["soiree-anna-pavlovna", "austerlitz-battle", "borodino-battle", "natasha-and-andrei-engagement", "ball-in-st-petersburg"]
     }
   },
   {
@@ -32,10 +32,9 @@
     "bio": "Юная графиня. Не обладая классической красотой, пленяет живостью, искренностью и прекрасными душевными качествами. Воспитана в роскоши и заботе, имеет превосходное образование и знатное происхождение. Война меняет её ценности: из лёгкой и беззаботной девушки она приходит к простому человеческому счастью — выходит замуж за Пьера Безухова, рожает детей и находит себя в роли хранительницы очага.",
     "links": {
       "relatives": ["pierre-bezukhov", "andrei-bolkonsky", "ilya-rostov", "natalya-rostova-senior", "nikolai-rostov", "vera-rostova", "petya-rostov"],
-      "events": ["hunt-in-otradnoye", "ball-in-st-petersburg", "natasha-and-andrei-engagement", "natasha-and-pierre-meeting"]
+      "events": ["hunt-in-otradnoye", "ball-in-st-petersburg", "natasha-and-andrei-engagement", "natasha-and-pierre-meeting", "attempted-elopement-natasha"]
     }
   },
-
   {
     "id": "nikolai-bolkonsky",
     "name": "Николай Андреевич Болконский",
@@ -60,7 +59,6 @@
       "events": []
     }
   },
-
   {
     "id": "ilya-rostov",
     "name": "Илья Андреевич Ростов",
@@ -93,8 +91,8 @@
     "smbio": "Патриот, женится на Марии, спасает семью.",
     "bio": "Брат Наташи, впоследствии муж Марьи Болконской. Искренний, добрый и отважный патриот, любящий свою семью. Долгое время влюблён в Соню, но женится на Марье; уходит в отставку, чтобы поправить дела дома.",
     "links": {
-      "relatives": ["natasha-rostova", "maria-bolkonskaya", "vera-rostova", "petya-rostov", "ilya-rostov", "natalya-rostova-senior"],
-      "events": ["battle-borodino", "retreat-from-moscow"]
+      "relatives": ["natasha-rostova", "maria-bolkonskaya", "vera-rostov", "petya-rostov", "ilya-rostov", "natalya-rostova-senior"],
+      "events": ["hunt-in-otradnoye", "borodino-battle", "retreat-from-moscow"]
     }
   },
   {
@@ -142,7 +140,7 @@
     "bio": "Яркая красавица и царица высшего петербургского света. Не отличается умом и образованностью, но умеет очаровывать и заводить полезные связи. Безнравственна и расчётлива; первая жена Пьера Безухова.",
     "links": {
       "relatives": ["pierre-bezukhov", "anatole-kuragin"],
-      "events": ["petersburg-high-society", "pierre-marriage-to-helene"]
+      "events": ["soiree-anna-pavlovna", "pierre-marriage-to-helene"]
     }
   },
   {
@@ -167,6 +165,42 @@
     "links": {
       "relatives": [],
       "events": ["duel-with-pierre", "partisan-war"]
+    }
+  },
+  {
+    "id": "napoleon-bonaparte",
+    "name": "Наполеон Бонапарт",
+    "aliases": ["Наполеон", "Император Наполеон", "Корсиканец"],
+    "family": "Бонапарты",
+    "smbio": "Великий полководец, самовлюблённый, падает после России.",
+    "bio": "Французский император, гениальный полководец и государственный деятель. В романе предстаёт как человек огромного ума и амбиций, но в то же время - как самовлюблённый и тщеславный правитель. Его поход на Россию заканчивается катастрофой, что становится поворотным моментом в его карьере и жизни. Толстой показывает Наполеона как человека, который играет важную роль в истории, но в конечном итоге оказывается жертвой собственных амбиций и обстоятельств.",
+    "links": {
+      "relatives": [],
+      "events": ["austerlitz-battle", "borodino-battle", "moscow-fire", "retreat-from-moscow"]
+    }
+  },
+  {
+    "id": "mikhail-kutuzov",
+    "name": "Михаил Кутузов",
+    "aliases": ["Кутузов", "Главнокомандующий", "Михаил Илларионович"],
+    "family": "Кутузовы",
+    "smbio": "Мудрый полководец, спасает Россию, народный герой.",
+    "bio": "Русский полководец, главнокомандующий русской армией во время Отечественной войны 1812 года. В романе представлен как человек глубокой мудрости и интуиции, который понимает дух российского солдата и особенности ведения войны на русской земле. В противоположность Наполеону, Кутузов показан как полководец, который не стремится к славе, а думает о благе страны и народа. Его стратегия, основанная на терпении и избегании решающих сражений, приводит к победе над Наполеоном и спасению России.",
+    "links": {
+      "relatives": [],
+      "events": ["borodino-battle", "retreat-from-moscow"]
+    }
+  },
+  {
+    "id": "denisov",
+    "name": "Василий Денисов",
+    "aliases": ["Денисов"],
+    "family": "—",
+    "smbio": "Храбрый гусар, патриот, друг Николая.",
+    "bio": "Храбрый и отважный офицер гусарского полка, друг Николая Ростова. Известен своей отвагой и патриотизмом. Участвует в партизанской войне против французов, показывая пример мужества и преданности Родине.",
+    "links": {
+      "relatives": [],
+      "events": ["partisan-war"]
     }
   }
 ]
