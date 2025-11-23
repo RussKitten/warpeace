@@ -5,10 +5,6 @@
     <p class="small mono event-meta">
       {{ ev.date }} • {{ loc?.name }} <span v-if="loc">({{ loc.type }})</span>
     </p>
-    <h1>Краткое содержание</h1>
-    <p class="event-summary">{{ ev.summary }}</p>
-    <h1>Цитаты</h1>
-    <p class="event-summary" v-for="quote in ev.quotes" :key="quote">"{{ quote }}"</p>
     <div v-if="ev.participants?.length" class="participants-section">
       <h3>Участники</h3>
       <div class="row participants-row">
@@ -22,6 +18,11 @@
         </span>
       </div>
     </div>
+    <h1>Краткое содержание</h1>
+    <p class="event-summary">{{ ev.summary }}</p>
+    <h1>Цитаты</h1>
+    <p class="event-summary" v-for="quote in ev.quotes" :key="quote">"{{ quote }}"</p>
+    <img class="portrait" :src="`/img/events/${ev.id}.jpg`" :alt="ev.name" @error="onImgError" />
   </section>
   <section v-else class="small not-found">Событие не найдено.</section>
 </template>
@@ -53,13 +54,24 @@ const navigateToHero = (heroId) => {
     path: '/heroes',
     query: {
       heroId,
-      fromEvent: props.id // Pass the current event ID
     }
   })
 }
 </script>
 
 <style scoped>
+.portrait {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #f1f1f1;
+}
+.small {
+  font-size: 14px;
+}
 .back-card {
   cursor: pointer;
   text-align: center;

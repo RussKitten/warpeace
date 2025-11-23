@@ -1,10 +1,5 @@
 <template>
   <section>
-    <div v-if="route.query.fromEvent" class="back-button-container">
-      <button @click="goBackToEvent" class="back-button">
-        Назад к событию
-      </button>
-    </div>
     <h2 class="section-title">Герои</h2>
     <SearchBox v-model="q" placeholder="Поиск по героям…" />
     <hr class="sep" />
@@ -72,15 +67,22 @@ const toggle = async (id) => {
     expandedIds.delete(id)
     return
   }
+  
   expandedIds.add(id)
   if (expandedIds.size > 3) {
     const first = expandedIds.values().next().value
     expandedIds.delete(first)
   }
+  
   await nextTick()
   const el = cardRefs[id]
   if (el && typeof el.scrollIntoView === 'function') {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // Прокручиваем к элементу с отступом от верха
+    el.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start',
+      inline: 'nearest'
+    })
   }
 }
 
@@ -94,13 +96,27 @@ const onImgError = (e) => {
   e.target.src = '/img/tolstoy.jpg'
 }
 
-onMounted(loadAll)
-
-const goBackToEvent = () => {
-  if (route.query.fromEvent) {
-    router.push(`/events/${route.query.fromEvent}`)
-  }
-}
+onMounted(() => {
+  loadAll().then(() => {
+    // После загрузки данных проверяем heroId из query параметров
+    if (route.query.heroId) {
+      const heroId = route.query.heroId
+      if (heroes.value.some(hero => hero.id === heroId)) {
+        expandedIds.add(heroId)
+        nextTick(() => {
+          const el = cardRefs[heroId]
+          if (el && typeof el.scrollIntoView === 'function') {
+            el.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start',
+              inline: 'nearest'
+            })
+          }
+        })
+      }
+    }
+  })
+})
 
 // Watch for changes in the route query to expand the appropriate hero
 watch(
@@ -113,13 +129,16 @@ watch(
         nextTick(() => {
           const el = cardRefs[heroId]
           if (el && typeof el.scrollIntoView === 'function') {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            el.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start',
+              inline: 'nearest'
+            })
           }
         })
       }
     }
-  },
-  { immediate: true }
+  }
 )
 
 const filtered = computed(() => {
@@ -163,6 +182,7 @@ const filtered = computed(() => {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   background: var(--card);
   margin-bottom: 12px;
+  scroll-margin-top: 20px; /* Добавляем отступ для прокрутки */
 }
 .card h3 {
   display: flex;
@@ -180,7 +200,6 @@ const filtered = computed(() => {
 }
 .card.expanded {
   grid-column: 1 / -1;
-  scroll-margin-top: 16px;
 }
 .expanded-content {
   display: grid;

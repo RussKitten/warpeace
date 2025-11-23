@@ -13,6 +13,13 @@
         >
           Читать роман (Викиисточник)
         </a>
+        <a
+          class="btn btn-ghost"
+          href="https://www.culture.ru/live/movies/467/voina-i-mir"
+          target="_blank" rel="noopener"
+        >
+          Смотреть фильм по роману
+        </a>
       </div>
       <hr class="sep" />
       <ul class="clean features-list">
