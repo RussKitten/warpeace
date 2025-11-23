@@ -179,3 +179,38 @@ input[type="search"]:focus {
 
 /* Списки */
 ul.clean { list-style: none; padding: 0; margin: 0; }
+/* Адаптивная навигация */
+@media (max-width: 767px) {
+  .nav {
+    flex-direction: column;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    gap: 0;
+    padding: 0 16px;
+  }
+  .nav--open {
+    max-height: 500px;
+    padding: 10px 16px;
+  }
+  .nav a {
+    width: 100%;
+    padding: 10px 16px;
+    margin: 4px 0;
+  }
+  header {
+    cursor: pointer;
+  }
+  header::after {
+    content: "☰";
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    color: var(--peach);
+    font-size: 24px;
+    transition: transform 0.3s ease;
+  }
+  header.nav--open::after {
+    transform: rotate(90deg);
+  }
+}

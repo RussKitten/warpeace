@@ -1,6 +1,6 @@
 <template>
-  <header>
-    <nav class="nav">
+  <header @click="toggleMenu">
+    <nav class="nav" :class="{ 'nav--open': isMenuOpen }">
       <RouterLink to="/">Главная</RouterLink>
       <RouterLink to="/heroes">Герои</RouterLink>
       <RouterLink to="/events">События</RouterLink>
@@ -15,5 +15,9 @@
 </template>
 
 <script setup>
-// minimalist shell
+  import { ref } from 'vue';
+  const isMenuOpen = ref(false);
+  const toggleMenu = () => {
+    isMenuOpen.value = !isMenuOpen.value;
+  };
 </script>
