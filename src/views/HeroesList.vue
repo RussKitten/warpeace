@@ -26,11 +26,21 @@
             <p class="bio">{{ ch.bio }}</p>
             <div v-if="ch.links?.relatives?.length" class="row wrap">
               <span class="label">Родственники:</span>
-              <RouterLink v-for="rid in ch.links.relatives" :key="rid" class="tag" :to="`/heroes/${rid}`">{{ idToName[rid] || rid }}</RouterLink>
+              <a
+                v-for="rid in ch.links.relatives"
+                :key="rid"
+                class="tag"
+                href="#"
+                @click.prevent="toggle(rid)"
+              >
+                {{ idToName[rid] || rid }}
+              </a>
             </div>
             <div v-if="ch.links?.events?.length" class="row wrap">
               <span class="label">События:</span>
-              <RouterLink v-for="eid in ch.links.events" :key="eid" class="tag" :to="`/events/${eid}`">{{ eventsById[eid]?.title || eid }}</RouterLink>
+              <RouterLink v-for="eid in ch.links.events" :key="eid" class="tag" :to="`/events/${eid}`">
+                {{ eventsById[eid]?.title || eid }}
+              </RouterLink>
             </div>
           </div>
         </div>
@@ -46,16 +56,14 @@ import SearchBox from '../components/SearchBox.vue'
 
 const { loadAll, loading, error, heroes, eventsById } = useData()
 const q = ref('')
-
-// track up to three expanded cards
 const expandedIds = reactive(new Set())
 const cardRefs = reactive({})
+
 const toggle = async (id) => {
   if (expandedIds.has(id)) {
     expandedIds.delete(id)
     return
   }
-  // add; if exceeds 3, remove the oldest (first inserted)
   expandedIds.add(id)
   if (expandedIds.size > 3) {
     const first = expandedIds.values().next().value
@@ -67,11 +75,13 @@ const toggle = async (id) => {
     el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 }
+
 const idToName = computed(() => {
   const m = {}
   for (const h of heroes.value) m[h.id] = h.name
   return m
 })
+
 const onImgError = (e) => {
   e.target.src = '/img/tolstoy.jpg'
 }
@@ -89,51 +99,90 @@ const filtered = computed(() => {
   )
 })
 </script>
+
 <style scoped>
+.card {
+  border: 1px solid var(--line);
+  padding: 16px;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  background: var(--card);
+  margin-bottom: 12px;
+}
+
 .card h3 {
   display: flex;
   align-items: baseline;
   gap: 12px;
+  margin: 0 0 8px;
 }
+
 .card h3 a {
   color: inherit;
   text-decoration: none;
   cursor: pointer;
 }
+
 .card h3 a:hover {
   text-decoration: underline;
 }
-.more-link {
-  font-size: 0.8rem;
-  opacity: 0.7;
-}
+
 .card.expanded {
   grid-column: 1 / -1;
   scroll-margin-top: 16px;
 }
+
 .expanded-content {
   display: grid;
-  grid-template-columns: 150px 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
   margin-top: 12px;
   align-items: start;
 }
+
 .portrait {
-  width: 150px;
-  height: 150px;
+  width: 100%;
+  max-width: 150px;
+  height: auto;
+  aspect-ratio: 1/1;
   object-fit: cover;
   border-radius: 8px;
   background: #f1f1f1;
 }
+
 .details .row.wrap {
   flex-wrap: wrap;
   gap: 8px;
 }
+
 .label {
   font-weight: 600;
   margin-right: 8px;
 }
+
 .tag {
   margin-top: 4px;
+  cursor: pointer;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 600px) {
+  .expanded-content {
+    grid-template-columns: 150px 1fr;
+  }
+  .portrait {
+    max-width: 150px;
+  }
 }
 </style>
