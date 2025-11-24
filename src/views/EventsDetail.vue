@@ -47,10 +47,44 @@
         <p class="event-summary">{{ ev.summary }}</p>
       </div>
 
+      <!-- Подробное описание -->
+      <div v-if="ev.detailed_description" class="detailed-section">
+        <h2 class="section-subtitle">Подробное описание</h2>
+        <p class="event-detailed">{{ ev.detailed_description }}</p>
+      </div>
+
       <!-- Значимость события -->
       <div v-if="ev.significance" class="significance-section">
         <h2 class="section-subtitle">Историческая значимость</h2>
         <p class="event-significance">{{ ev.significance }}</p>
+      </div>
+
+      <!-- Темы -->
+      <div v-if="ev.themes?.length" class="themes-section">
+        <h2 class="section-subtitle">Темы</h2>
+        <div class="themes-list">
+          <span v-for="theme in ev.themes" :key="theme" class="theme-tag">
+            {{ formatTheme(theme) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Символизм -->
+      <div v-if="ev.symbolism" class="symbolism-section">
+        <h2 class="section-subtitle">Символизм</h2>
+        <p class="event-symbolism">{{ ev.symbolism }}</p>
+      </div>
+
+      <!-- Исторический контекст -->
+      <div v-if="ev.historical_context" class="context-section">
+        <h2 class="section-subtitle">Исторический контекст</h2>
+        <p class="event-context">{{ ev.historical_context }}</p>
+      </div>
+
+      <!-- Развитие персонажей -->
+      <div v-if="ev.character_development" class="character-section">
+        <h2 class="section-subtitle">Развитие персонажей</h2>
+        <p class="event-character">{{ ev.character_development }}</p>
       </div>
 
       <!-- Цитаты -->
@@ -66,6 +100,29 @@
           </blockquote>
         </div>
       </div>
+
+      <!-- Текстовые ссылки -->
+      <section v-if="eventTextLinks.length" class="text-links-section">
+        <h2 class="section-subtitle">📚 Текстовые ссылки на фрагменты</h2>
+        <div class="text-links-list">
+          <a
+            v-for="(textLink, index) in eventTextLinks"
+            :key="index"
+            :href="getTextLink(textLink)"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-link-item"
+            @click.stop
+          >
+            <span class="text-link-icon">📖</span>
+            <div class="text-link-content">
+              <span class="text-link-ref">{{ formatTextLink(textLink) }}</span>
+              <span class="text-link-desc">{{ getTextLinkDescription(textLink) }}</span>
+            </div>
+            <span class="external-link-icon">↗</span>
+          </a>
+        </div>
+      </section>
 
       <!-- Изображение события -->
       <div class="event-image-section">
@@ -110,6 +167,8 @@
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useData } from '../composables/useData.js'
+import { getTextLinkWithFallback, getTextLinkDescription, formatTextLink } from '../../public/data/linking/textLinks.js'
+import { textLinksMap } from '../../public/data/linking/textLinksMap.js'
 
 const props = defineProps({
   id: {
@@ -127,6 +186,25 @@ onMounted(loadAll)
 const ev = computed(() => eventsById.value[props.id])
 const loc = computed(() => ev.value ? locationsById.value[ev.value.placeId] : null)
 
+// Обработка текстовых ссылок для событий
+const eventTextLinks = computed(() => {
+  if (!ev.value) return []
+  
+  const links = []
+  
+  // Если есть поле textLink (строка)
+  if (ev.value.textLink) {
+    links.push(ev.value.textLink)
+  }
+  
+  // Если есть поле textLinks (массив)
+  if (ev.value.textLinks?.length) {
+    links.push(...ev.value.textLinks)
+  }
+  
+  return links
+})
+
 // Похожие события (по типу или участникам)
 const relatedEvents = computed(() => {
   if (!ev.value || !events.value) return []
@@ -139,6 +217,14 @@ const relatedEvents = computed(() => {
     )
     .slice(0, 3) // Ограничиваем 3 событиями
 })
+
+const getTextLink = (textLink) => {
+  return getTextLinkWithFallback(textLink);
+};
+
+const getTextLinkTitle = (textLink) => {
+  return textLinksMap[textLink]?.title || formatTextLink(textLink);
+};
 
 const navigateToHero = (heroId) => {
   router.push({
@@ -183,6 +269,16 @@ const formatLocationType = (type) => {
     'palace': 'Дворец'
   }
   return types[type] || type
+}
+
+const formatTheme = (theme) => {
+  const themes = {
+    'war-and-peace': 'Война и мир',
+    'russian-soul': 'Русская душа',
+    'freedom-and-necessity': 'Свобода и необходимость',
+    'life-and-death': 'Жизнь и смерть'
+  }
+  return themes[theme] || theme
 }
 </script>
 
@@ -357,16 +453,44 @@ const formatLocationType = (type) => {
 
 /* Содержание и значимость */
 .summary-section,
-.significance-section {
+.significance-section,
+.detailed-section,
+.symbolism-section,
+.context-section,
+.character-section {
   margin: 32px 0;
 }
 
 .event-summary,
-.event-significance {
+.event-significance,
+.event-detailed,
+.event-symbolism,
+.event-context,
+.event-character {
   line-height: 1.7;
   font-size: 16px;
   color: var(--text);
   margin: 0;
+}
+
+/* Темы */
+.themes-section {
+  margin: 32px 0;
+}
+
+.themes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.theme-tag {
+  padding: 6px 12px;
+  background: rgba(187, 148, 87, 0.1);
+  border: 1px solid var(--peach);
+  border-radius: 20px;
+  font-size: 14px;
+  color: var(--peach);
 }
 
 /* Цитаты */
@@ -388,6 +512,68 @@ const formatLocationType = (type) => {
   font-style: italic;
   line-height: 1.6;
   margin: 0;
+}
+
+/* Текстовые ссылки */
+.text-links-section {
+  margin: 32px 0;
+  padding: 20px;
+  background: rgba(187, 148, 87, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(187, 148, 87, 0.1);
+}
+
+.text-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.text-link-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid var(--line);
+  background: #432818;
+  text-decoration: none;
+  color: inherit;
+}
+
+.text-link-item:hover {
+  background: rgba(187, 148, 87, 0.1);
+  border-color: var(--peach);
+  transform: translateX(4px);
+  text-decoration: none;
+}
+
+.text-link-icon {
+  font-size: 1.2em;
+}
+
+.text-link-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.text-link-ref {
+  font-weight: 500;
+  color: var(--peach);
+}
+
+.text-link-desc {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.external-link-icon {
+  color: var(--peach);
+  font-weight: bold;
 }
 
 /* Изображение */
@@ -431,6 +617,7 @@ const formatLocationType = (type) => {
   border-color: var(--peach);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
 }
 
 .related-event-card h4 {
@@ -487,6 +674,7 @@ const formatLocationType = (type) => {
 .back-to-events-btn:hover {
   background: #a67c52;
   transform: translateY(-2px);
+  text-decoration: none;
 }
 
 @media (min-width: 768px) {

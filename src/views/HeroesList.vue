@@ -50,12 +50,21 @@
               {{ hero.aliases.join(', ') }}
             </p>
             <p class="hero-bio-preview">{{ hero.smbio }}</p>
+            
+            <!-- Новые поля в карточке -->
+            <div class="hero-quote-preview" v-if="hero.quotes?.[0]">
+              "{{ truncateQuote(hero.quotes[0]) }}"
+            </div>
+            
             <div class="hero-stats">
-              <span v-if="hero.links?.relatives?.length" class="stat">
-                👨‍👩‍👧‍👦 {{ hero.links.relatives.length }}
+              <span v-if="hero.key_moments?.length" class="stat">
+                ⭐ {{ hero.key_moments.length }}
               </span>
-              <span v-if="hero.links?.events?.length" class="stat">
-                📅 {{ hero.links.events.length }}
+              <span v-if="hero.quotes?.length" class="stat">
+                💬 {{ hero.quotes.length }}
+              </span>
+              <span v-if="hero.textLinks?.length" class="stat">
+                📚 {{ hero.textLinks.length }}
               </span>
             </div>
           </div>
@@ -88,6 +97,23 @@
               <p class="hero-family">{{ selectedHero.family }}</p>
               <p class="hero-sm-bio">{{ selectedHero.smbio }}</p>
               
+              <!-- Быстрый просмотр философских взглядов -->
+              <div class="philosophy-preview" v-if="selectedHero.philosophical_views?.length">
+                <h4>Философские взгляды:</h4>
+                <div class="philosophy-tags">
+                  <span 
+                    v-for="(view, index) in selectedHero.philosophical_views.slice(0, 3)" 
+                    :key="index"
+                    class="philosophy-tag"
+                  >
+                    {{ view }}
+                  </span>
+                  <span v-if="selectedHero.philosophical_views.length > 3" class="more-tag">
+                    +{{ selectedHero.philosophical_views.length - 3 }}
+                  </span>
+                </div>
+              </div>
+              
               <div class="hero-actions">
                 <button class="view-details-btn" @click="openFullDetails(selectedHero)">
                   📖 Полная биография
@@ -97,11 +123,11 @@
           </div>
 
           <!-- Relatives Section -->
-          <div v-if="selectedHero.links?.relatives?.length" class="relatives-section">
-            <h3>Родственные связи</h3>
+          <div v-if="selectedHero.relationships && Object.keys(selectedHero.relationships).length" class="relatives-section">
+            <h3>Отношения с другими персонажами</h3>
             <div class="relatives-grid">
               <div
-                v-for="relativeId in selectedHero.links.relatives"
+                v-for="(relationType, relativeId) in selectedHero.relationships"
                 :key="relativeId"
                 class="relative-card"
                 @click="openRelativePopup(relativeId)"
@@ -114,6 +140,7 @@
                 />
                 <div class="relative-info">
                   <span class="relative-name">{{ idToName[relativeId] || relativeId }}</span>
+                  <span class="relative-relation">{{ relationType }}</span>
                   <span class="relative-family">{{ getHeroFamily(relativeId) }}</span>
                 </div>
               </div>
@@ -177,19 +204,69 @@
           </div>
 
           <div class="details-body">
+            <!-- Символика -->
+            <section v-if="fullDetailsHero.symbolism" class="symbolism-section">
+              <h3>🎭 Символика персонажа</h3>
+              <p class="symbolism-text">{{ fullDetailsHero.symbolism }}</p>
+            </section>
+
             <section class="bio-section">
               <h3>📖 Биография</h3>
               <p class="full-bio">{{ fullDetailsHero.bio }}</p>
             </section>
 
+            <!-- Философские взгляды -->
+            <section v-if="fullDetailsHero.philosophical_views?.length" class="philosophy-section">
+              <h3>💭 Философские взгляды</h3>
+              <div class="philosophy-grid">
+                <div 
+                  v-for="(view, index) in fullDetailsHero.philosophical_views" 
+                  :key="index"
+                  class="philosophy-item"
+                >
+                  {{ view }}
+                </div>
+              </div>
+            </section>
+
+            <!-- Ключевые моменты -->
+            <section v-if="fullDetailsHero.key_moments?.length" class="key-moments-section">
+              <h3>⭐ Ключевые моменты развития</h3>
+              <div class="key-moments-list">
+                <div 
+                  v-for="(moment, index) in fullDetailsHero.key_moments" 
+                  :key="index"
+                  class="key-moment-item"
+                >
+                  <span class="moment-number">{{ index + 1 }}</span>
+                  <span class="moment-text">{{ moment }}</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Цитаты -->
+            <section v-if="fullDetailsHero.quotes?.length" class="quotes-section">
+              <h3>💬 Характерные цитаты</h3>
+              <div class="quotes-list">
+                <div 
+                  v-for="(quote, index) in fullDetailsHero.quotes" 
+                  :key="index"
+                  class="quote-item"
+                >
+                  <div class="quote-text">"{{ quote }}"</div>
+                </div>
+              </div>
+            </section>
+
             <div class="details-grid">
-              <section v-if="fullDetailsHero.links?.relatives?.length" class="relatives-details">
-                <h3>👨‍👩‍👧‍👦 Родственники</h3>
-                <div class="relatives-list">
+              <!-- Отношения -->
+              <section v-if="fullDetailsHero.relationships && Object.keys(fullDetailsHero.relationships).length" class="relationships-details">
+                <h3>👥 Отношения с персонажами</h3>
+                <div class="relationships-list">
                   <div
-                    v-for="relativeId in fullDetailsHero.links.relatives"
+                    v-for="(relationType, relativeId) in fullDetailsHero.relationships"
                     :key="relativeId"
-                    class="relative-item"
+                    class="relationship-item"
                     @click="openRelativeDetails(relativeId)"
                   >
                     <img 
@@ -198,14 +275,39 @@
                       class="relative-avatar-small"
                       @error="onImgError"
                     />
-                    <div class="relative-details">
+                    <div class="relationship-details">
                       <span class="relative-name">{{ idToName[relativeId] || relativeId }}</span>
+                      <span class="relationship-type">{{ relationType }}</span>
                       <span class="relative-family">{{ getHeroFamily(relativeId) }}</span>
                     </div>
                   </div>
                 </div>
               </section>
 
+              <!-- Ссылки на текст -->
+             <section v-if="fullDetailsHero.textLinks?.length" class="text-links-section">
+  <h3>📚 Текстовые ссылки на фрагменты</h3>
+  <div class="text-links-list">
+    <a
+      v-for="(textLink, index) in fullDetailsHero.textLinks"
+      :key="index"
+      :href="getTextLink(textLink)"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="text-link-item"
+      @click.stop
+    >
+      <span class="text-link-icon">📖</span>
+      <div class="text-link-content">
+        <span class="text-link-ref">{{ formatTextLink(textLink) }}</span>
+        <span class="text-link-desc">{{ getTextLinkDescription(textLink) }}</span>
+      </div>
+      <span class="external-link-icon">↗</span>
+    </a>
+  </div>
+</section>
+
+              <!-- События -->
               <section v-if="fullDetailsHero.links?.events?.length" class="events-section">
                 <h3>📅 События с участием персонажа</h3>
                 <div class="events-list">
@@ -233,6 +335,8 @@ import { computed, ref, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useData } from '../composables/useData.js'
 import SearchBox from '../components/SearchBox.vue'
+import { generateTextLink, getTextLinkWithFallback, getTextLinkDescription, formatTextLink } from '../../public/data/linking/textLinks.js'
+import { textLinksMap } from '../../public/data/linking/textLinksMap.js'
 
 const { loadAll, loading, error, heroes, eventsById } = useData()
 const route = useRoute()
@@ -251,10 +355,19 @@ const idToName = computed(() => {
   return m
 })
 
+
+const getTextLink = (textLink) => {
+  return getTextLinkWithFallback(textLink);
+};
+
 const getHeroFamily = (heroId) => {
   const hero = heroes.value?.find(h => h.id === heroId)
   return hero?.family || ''
 }
+
+const getTextLinkTitle = (textLink) => {
+  return textLinksMap[textLink]?.title || formatTextLink(textLink);
+};
 
 const onImgError = (e) => {
   e.target.src = '/img/tolstoy.jpg'
@@ -268,6 +381,16 @@ const formatEventDate = (dateString) => {
   })
 }
 
+// Обрезка цитаты для превью
+const truncateQuote = (quote) => {
+  if (quote.length > 100) {
+    return quote.substring(0, 100) + '...'
+  }
+  return quote
+}
+
+// Открытие текстовой ссылки
+
 // Hero popup functions
 const scrollToPopup = () => {
   nextTick(() => {
@@ -277,16 +400,16 @@ const scrollToPopup = () => {
       if (activePopup) {
         const rect = activePopup.getBoundingClientRect()
         const isMobile = window.innerWidth < 768
-        const offset = isMobile ? 120 : 80 // Больший отступ для мобильных
+        const offset = isMobile ? 120 : 80
         
         const targetScroll = window.pageYOffset + rect.top - offset
         
         window.scrollTo({
-          top: Math.max(0, targetScroll), // Не уходим в отрицательные значения
+          top: Math.max(0, targetScroll),
           behavior: 'smooth'
         })
       }
-    }, 50) // Небольшая задержка для гарантии рендера попапа
+    }, 50)
   })
 }
 
@@ -296,7 +419,6 @@ const openHeroPopup = (hero) => {
   fullDetailsHero.value = null
   scrollToPopup()
 }
-
 
 const openRelativePopup = (relativeId) => {
   if (!heroes.value) return
@@ -334,11 +456,6 @@ const openRelativeDetails = (relativeId) => {
   }
 }
 
-const scrollToHeroEvents = (hero) => {
-  // Implementation for scrolling to hero events
-  console.log('Scroll to events for:', hero.name)
-}
-
 const filtered = computed(() => {
   if (!heroes.value) return []
   const t = q.value.trim().toLowerCase()
@@ -350,18 +467,16 @@ const filtered = computed(() => {
       h.family, 
       h.bio, 
       h.smbio,
-      ...(h.aliases || [])
+      h.symbolism || '',
+      ...(h.aliases || []),
+      ...(h.quotes || []),
+      ...(h.philosophical_views || []),
+      ...(h.key_moments || [])
     ].join(' ').toLowerCase()
     
     return searchText.includes(t)
   })
 })
-const scrollToTop = () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  })
-}
 
 onMounted(() => {
   loadAll().then(() => {
@@ -560,13 +675,26 @@ watch(
 .hero-bio-preview {
   flex: 1;
   line-height: 1.5;
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   color: var(--text);
+}
+
+.hero-quote-preview {
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 0.9em;
+  line-height: 1.4;
+  margin: 0 0 16px;
+  padding: 8px 12px;
+  background: rgba(187, 148, 87, 0.1);
+  border-radius: 8px;
+  border-left: 3px solid var(--peach);
 }
 
 .hero-stats {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .stat {
@@ -575,6 +703,7 @@ watch(
   background: var(--background);
   padding: 4px 8px;
   border-radius: 6px;
+  border: 1px solid var(--line);
 }
 
 /* Popup Styles */
@@ -656,6 +785,39 @@ watch(
   font-size: 1.5em;
 }
 
+.philosophy-preview {
+  margin: 12px 0;
+}
+
+.philosophy-preview h4 {
+  margin: 0 0 8px;
+  font-size: 0.9em;
+  color: var(--text-secondary);
+}
+
+.philosophy-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.philosophy-tag {
+  background: rgba(187, 148, 87, 0.15);
+  color: var(--peach);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8em;
+  border: 1px solid rgba(187, 148, 87, 0.3);
+}
+
+.more-tag {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8em;
+}
+
 .hero-actions {
   display: flex;
   gap: 12px;
@@ -729,6 +891,13 @@ watch(
   font-weight: 600;
   font-size: 0.9em;
   margin-bottom: 2px;
+}
+
+.relative-relation {
+  font-size: 0.8em;
+  color: var(--peach);
+  margin-bottom: 2px;
+  font-style: italic;
 }
 
 .relative-family {
@@ -815,15 +984,114 @@ watch(
   gap: 30px;
 }
 
-.bio-section h3,
-.relatives-details h3,
-.events-section h3 {
+/* Новые секции для дополнительной информации */
+.symbolism-section,
+.philosophy-section,
+.key-moments-section,
+.quotes-section {
+  padding: 20px;
+  background: rgba(187, 148, 87, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(187, 148, 87, 0.1);
+}
+
+.symbolism-section h3,
+.philosophy-section h3,
+.key-moments-section h3,
+.quotes-section h3,
+.relationships-details h3,
+.text-links-section h3,
+.events-section h3,
+.bio-section h3 {
   margin: 0 0 16px;
   color: var(--peach);
   font-size: 1.3em;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.symbolism-text {
+  line-height: 1.6;
+  margin: 0;
+  font-size: 1.05em;
+  color: var(--text);
+}
+
+.philosophy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.philosophy-item {
+  background: rgba(187, 148, 87, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid var(--peach);
+  line-height: 1.5;
+}
+
+.key-moments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.key-moment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #432818;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  transition: all 0.3s ease;
+}
+
+.key-moment-item:hover {
+  border-color: var(--peach);
+  transform: translateX(4px);
+}
+
+.moment-number {
+  background: var(--peach);
+  color: #432818;;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8em;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.moment-text {
+  flex: 1;
+  line-height: 1.5;
+}
+
+.quotes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.quote-item {
+  padding: 16px;
+  background: #432818;
+  border-radius: 8px;
+  border-left: 4px solid var(--peach);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quote-text {
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--text);
+  font-size: 1.05em;
 }
 
 .full-bio {
@@ -838,13 +1106,13 @@ watch(
   gap: 30px;
 }
 
-.relatives-list {
+.relationships-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.relative-item {
+.relationship-item {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -855,7 +1123,7 @@ watch(
   border: 1px solid var(--line);
 }
 
-.relative-item:hover {
+.relationship-item:hover {
   background: rgba(187, 148, 87, 0.1);
   border-color: var(--peach);
   transform: translateX(4px);
@@ -869,10 +1137,50 @@ watch(
   flex-shrink: 0;
 }
 
-.relative-details {
+.relationship-details {
   display: flex;
   flex-direction: column;
   flex: 1;
+}
+
+.relationship-type {
+  font-size: 0.9em;
+  color: var(--peach);
+  font-style: italic;
+  margin: 2px 0;
+}
+
+.text-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.text-link-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid var(--line);
+  background: #432818;;
+}
+
+.text-link-item:hover {
+  background: rgba(187, 148, 87, 0.1);
+  border-color: var(--peach);
+  transform: translateX(4px);
+}
+
+.text-link-icon {
+  font-size: 1.2em;
+}
+
+.text-link-ref {
+  font-weight: 500;
+  color: var(--peach);
 }
 
 .events-list {
@@ -891,6 +1199,7 @@ watch(
   border-radius: 8px;
   transition: all 0.3s ease;
   border: 1px solid var(--line);
+  background: white;
 }
 
 .event-link:hover {
@@ -963,6 +1272,10 @@ watch(
   .event-date {
     margin-left: 0;
   }
+
+  .philosophy-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
@@ -981,6 +1294,13 @@ watch(
   }
 
   .heroes-container {
+    padding: 16px;
+  }
+
+  .symbolism-section,
+  .philosophy-section,
+  .key-moments-section,
+  .quotes-section {
     padding: 16px;
   }
 }
