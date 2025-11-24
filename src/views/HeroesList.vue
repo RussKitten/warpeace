@@ -4,28 +4,26 @@
       <h1 class="page-title">Герои «Войны и мира»</h1>
       <p class="page-subtitle">Персонажи великого романа Льва Толстого</p>
     </div>
-
     <div class="search-section">
       <SearchBox v-model="q" placeholder="Поиск по героям, семьям, биографиям..." />
       <div class="search-stats" v-if="!loading && !error">
         Найдено {{ filtered.length }} из {{ heroes.length }} персонажей
       </div>
     </div>
-
     <hr class="sep" />
-    
+
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
       <p>Загрузка персонажей...</p>
     </div>
-    
+
     <div v-else-if="error" class="error-state">
       <div class="error-icon">⚠️</div>
       <h3>Ошибка загрузки</h3>
       <p>{{ error }}</p>
       <button @click="loadAll" class="retry-btn">Попробовать снова</button>
     </div>
-    
+
     <!-- Hero Cards Grid -->
     <div v-else class="heroes-container">
       <div class="heroes-grid" v-if="filtered.length">
@@ -50,12 +48,12 @@
               {{ hero.aliases.join(', ') }}
             </p>
             <p class="hero-bio-preview">{{ hero.smbio }}</p>
-            
+
             <!-- Новые поля в карточке -->
             <div class="hero-quote-preview" v-if="hero.quotes?.[0]">
               "{{ truncateQuote(hero.quotes[0]) }}"
             </div>
-            
+
             <div class="hero-stats">
               <span v-if="hero.key_moments?.length" class="stat">
                 ⭐ {{ hero.key_moments.length }}
@@ -70,7 +68,6 @@
           </div>
         </div>
       </div>
-
       <div v-else class="empty-state">
         <div class="empty-icon">🔍</div>
         <h3>Персонажи не найдены</h3>
@@ -78,12 +75,11 @@
         <button @click="q = ''" class="clear-search-btn">Очистить поиск</button>
       </div>
     </div>
-
     <!-- Hero Popup Modal -->
     <div v-if="selectedHero" class="popup-overlay" @click="closeAllPopups">
       <div class="hero-popup" @click.stop>
         <button class="close-btn" @click="closeAllPopups">×</button>
-        
+
         <div class="popup-content">
           <div class="hero-main-info">
             <img 
@@ -96,7 +92,7 @@
               <h2>{{ selectedHero.name }}</h2>
               <p class="hero-family">{{ selectedHero.family }}</p>
               <p class="hero-sm-bio">{{ selectedHero.smbio }}</p>
-              
+
               <!-- Быстрый просмотр философских взглядов -->
               <div class="philosophy-preview" v-if="selectedHero.philosophical_views?.length">
                 <h4>Философские взгляды:</h4>
@@ -113,7 +109,7 @@
                   </span>
                 </div>
               </div>
-              
+
               <div class="hero-actions">
                 <button class="view-details-btn" @click="openFullDetails(selectedHero)">
                   📖 Полная биография
@@ -121,7 +117,6 @@
               </div>
             </div>
           </div>
-
           <!-- Relatives Section -->
           <div v-if="selectedHero.relationships && Object.keys(selectedHero.relationships).length" class="relatives-section">
             <h3>Отношения с другими персонажами</h3>
@@ -149,12 +144,11 @@
         </div>
       </div>
     </div>
-
     <!-- Relative Popup Modal -->
     <div v-if="selectedRelative" class="popup-overlay" @click="closeAllPopups">
       <div class="relative-popup" @click.stop>
         <button class="close-btn" @click="closeAllPopups">×</button>
-        
+
         <div class="popup-content">
           <div class="hero-main-info">
             <img 
@@ -175,12 +169,11 @@
         </div>
       </div>
     </div>
-
     <!-- Full Details Modal -->
     <div v-if="fullDetailsHero" class="popup-overlay full-details-overlay" @click="closeFullDetails">
       <div class="full-details-popup" @click.stop>
         <button class="close-btn" @click="closeFullDetails">×</button>
-        
+
         <div class="full-details-content">
           <div class="details-header">
             <img 
@@ -202,19 +195,16 @@
               </div>
             </div>
           </div>
-
           <div class="details-body">
             <!-- Символика -->
             <section v-if="fullDetailsHero.symbolism" class="symbolism-section">
               <h3>🎭 Символика персонажа</h3>
               <p class="symbolism-text">{{ fullDetailsHero.symbolism }}</p>
             </section>
-
             <section class="bio-section">
               <h3>📖 Биография</h3>
               <p class="full-bio">{{ fullDetailsHero.bio }}</p>
             </section>
-
             <!-- Философские взгляды -->
             <section v-if="fullDetailsHero.philosophical_views?.length" class="philosophy-section">
               <h3>💭 Философские взгляды</h3>
@@ -228,7 +218,6 @@
                 </div>
               </div>
             </section>
-
             <!-- Ключевые моменты -->
             <section v-if="fullDetailsHero.key_moments?.length" class="key-moments-section">
               <h3>⭐ Ключевые моменты развития</h3>
@@ -243,7 +232,6 @@
                 </div>
               </div>
             </section>
-
             <!-- Цитаты -->
             <section v-if="fullDetailsHero.quotes?.length" class="quotes-section">
               <h3>💬 Характерные цитаты</h3>
@@ -257,7 +245,6 @@
                 </div>
               </div>
             </section>
-
             <div class="details-grid">
               <!-- Отношения -->
               <section v-if="fullDetailsHero.relationships && Object.keys(fullDetailsHero.relationships).length" class="relationships-details">
@@ -283,30 +270,28 @@
                   </div>
                 </div>
               </section>
-
               <!-- Ссылки на текст -->
-             <section v-if="fullDetailsHero.textLinks?.length" class="text-links-section">
-  <h3>📚 Текстовые ссылки на фрагменты</h3>
-  <div class="text-links-list">
-    <a
-      v-for="(textLink, index) in fullDetailsHero.textLinks"
-      :key="index"
-      :href="getTextLink(textLink)"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="text-link-item"
-      @click.stop
-    >
-      <span class="text-link-icon">📖</span>
-      <div class="text-link-content">
-        <span class="text-link-ref">{{ formatTextLink(textLink) }}</span>
-        <span class="text-link-desc">{{ getTextLinkDescription(textLink) }}</span>
-      </div>
-      <span class="external-link-icon">↗</span>
-    </a>
-  </div>
-</section>
-
+              <section v-if="fullDetailsHero.textLinks?.length" class="text-links-section">
+                <h3>📚 Текстовые ссылки на фрагменты</h3>
+                <div class="text-links-list">
+                  <a
+                    v-for="(textLink, index) in fullDetailsHero.textLinks"
+                    :key="index"
+                    :href="getTextLink(textLink)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-link-item"
+                    @click.stop
+                  >
+                    <span class="text-link-icon">📖</span>
+                    <div class="text-link-content">
+                      <span class="text-link-ref">{{ formatTextLink(textLink) }}</span>
+                      <span class="text-link-desc">{{ getTextLinkDescription(textLink) }}</span>
+                    </div>
+                    <span class="external-link-icon">↗</span>
+                  </a>
+                </div>
+              </section>
               <!-- События -->
               <section v-if="fullDetailsHero.links?.events?.length" class="events-section">
                 <h3>📅 События с участием персонажа</h3>
@@ -323,6 +308,11 @@
                 </div>
               </section>
             </div>
+            <!-- PDF Viewer -->
+            <section v-if="pdfUrl" class="text-pdf-section">
+              <h3>📖 Полный текст</h3>
+              <iframe :src="pdfUrl" width="100%" height="600px"></iframe>
+            </section>
           </div>
         </div>
       </div>
@@ -337,16 +327,32 @@ import { useData } from '../composables/useData.js'
 import SearchBox from '../components/SearchBox.vue'
 import { generateTextLink, getTextLinkWithFallback, getTextLinkDescription, formatTextLink } from '../../public/data/linking/textLinks.js'
 import { textLinksMap } from '../../public/data/linking/textLinksMap.js'
+import { put } from "@vercel/blob";
 
 const { loadAll, loading, error, heroes, eventsById } = useData()
 const route = useRoute()
 const router = useRouter()
 const q = ref('')
-
 // State management
 const selectedHero = ref(null)
 const selectedRelative = ref(null)
 const fullDetailsHero = ref(null)
+const pdfUrl = ref(''); // URL для PDF файла
+
+// Функция для загрузки PDF-файла на Vercel Blob
+async function uploadPDF(filePath, fileName) {
+  try {
+    const response = await fetch(filePath);
+    const fileBlob = await response.blob();
+    const blob = await put(`pdfs/${fileName}`, fileBlob, {
+      access: 'public',
+    });
+    return blob.url;
+  } catch (error) {
+    console.error('Ошибка при загрузке PDF:', error);
+    return null;
+  }
+}
 
 const idToName = computed(() => {
   if (!heroes.value) return {}
@@ -354,7 +360,6 @@ const idToName = computed(() => {
   for (const h of heroes.value) m[h.id] = h.name
   return m
 })
-
 
 const getTextLink = (textLink) => {
   return getTextLinkWithFallback(textLink);
@@ -389,21 +394,19 @@ const truncateQuote = (quote) => {
   return quote
 }
 
-// Открытие текстовой ссылки
-
 // Hero popup functions
 const scrollToPopup = () => {
   nextTick(() => {
     setTimeout(() => {
       const activePopup = document.querySelector('.hero-popup, .relative-popup, .full-details-popup')
-      
+
       if (activePopup) {
         const rect = activePopup.getBoundingClientRect()
         const isMobile = window.innerWidth < 768
         const offset = isMobile ? 120 : 80
-        
+
         const targetScroll = window.pageYOffset + rect.top - offset
-        
+
         window.scrollTo({
           top: Math.max(0, targetScroll),
           behavior: 'smooth'
@@ -460,12 +463,12 @@ const filtered = computed(() => {
   if (!heroes.value) return []
   const t = q.value.trim().toLowerCase()
   if (!t) return heroes.value
-  
+
   return heroes.value.filter(h => {
     const searchText = [
-      h.name, 
-      h.family, 
-      h.bio, 
+      h.name,
+      h.family,
+      h.bio,
       h.smbio,
       h.symbolism || '',
       ...(h.aliases || []),
@@ -473,21 +476,26 @@ const filtered = computed(() => {
       ...(h.philosophical_views || []),
       ...(h.key_moments || [])
     ].join(' ').toLowerCase()
-    
+
     return searchText.includes(t)
   })
 })
 
-onMounted(() => {
-  loadAll().then(() => {
-    if (route.query.heroId && heroes.value) {
-      const heroId = route.query.heroId
-      const hero = heroes.value.find(h => h.id === heroId)
-      if (hero) {
-        openHeroPopup(hero)
-      }
+onMounted(async () => {
+  await loadAll();
+  // Загружаем PDF файл при монтировании компонента
+  const url = await uploadPDF('/text.pdf', 'text.pdf');
+  if (url) {
+    pdfUrl.value = url;
+  }
+
+  if (route.query.heroId && heroes.value) {
+    const heroId = route.query.heroId
+    const hero = heroes.value.find(h => h.id === heroId)
+    if (hero) {
+      openHeroPopup(hero)
     }
-  })
+  }
 })
 
 watch(
@@ -502,6 +510,7 @@ watch(
   }
 )
 </script>
+
 
 <style scoped>
 .heroes-page {
