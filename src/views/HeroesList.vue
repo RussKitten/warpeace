@@ -11,19 +11,16 @@
       </div>
     </div>
     <hr class="sep" />
-
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
       <p>Загрузка персонажей...</p>
     </div>
-
     <div v-else-if="error" class="error-state">
       <div class="error-icon">⚠️</div>
       <h3>Ошибка загрузки</h3>
       <p>{{ error }}</p>
       <button @click="loadAll" class="retry-btn">Попробовать снова</button>
     </div>
-
     <!-- Hero Cards Grid -->
     <div v-else class="heroes-container">
       <div class="heroes-grid" v-if="filtered.length">
@@ -48,12 +45,10 @@
               {{ hero.aliases.join(', ') }}
             </p>
             <p class="hero-bio-preview">{{ hero.smbio }}</p>
-
             <!-- Новые поля в карточке -->
             <div class="hero-quote-preview" v-if="hero.quotes?.[0]">
               "{{ truncateQuote(hero.quotes[0]) }}"
             </div>
-
             <div class="hero-stats">
               <span v-if="hero.key_moments?.length" class="stat">
                 ⭐ {{ hero.key_moments.length }}
@@ -79,7 +74,6 @@
     <div v-if="selectedHero" class="popup-overlay" @click="closeAllPopups">
       <div class="hero-popup" @click.stop>
         <button class="close-btn" @click="closeAllPopups">×</button>
-
         <div class="popup-content">
           <div class="hero-main-info">
             <img 
@@ -92,7 +86,6 @@
               <h2>{{ selectedHero.name }}</h2>
               <p class="hero-family">{{ selectedHero.family }}</p>
               <p class="hero-sm-bio">{{ selectedHero.smbio }}</p>
-
               <!-- Быстрый просмотр философских взглядов -->
               <div class="philosophy-preview" v-if="selectedHero.philosophical_views?.length">
                 <h4>Философские взгляды:</h4>
@@ -109,7 +102,6 @@
                   </span>
                 </div>
               </div>
-
               <div class="hero-actions">
                 <button class="view-details-btn" @click="openFullDetails(selectedHero)">
                   📖 Полная биография
@@ -148,7 +140,6 @@
     <div v-if="selectedRelative" class="popup-overlay" @click="closeAllPopups">
       <div class="relative-popup" @click.stop>
         <button class="close-btn" @click="closeAllPopups">×</button>
-
         <div class="popup-content">
           <div class="hero-main-info">
             <img 
@@ -170,86 +161,80 @@
       </div>
     </div>
     <!-- Full Details Modal -->
-      <!-- ... остальной шаблон ... -->
-
-  <!-- Full Details Modal -->
-  <div v-if="fullDetailsHero" class="popup-overlay full-details-overlay" @click="closeFullDetails">
-    <div class="full-details-popup" @click.stop>
-      <button class="close-btn" @click="closeFullDetails">×</button>
-
-      <div class="full-details-content">
-        <!-- ... остальной контент ... -->
-
-        <div class="details-grid">
-          <!-- Отношения -->
-          <section v-if="fullDetailsHero.relationships && Object.keys(fullDetailsHero.relationships).length" class="relationships-details">
-            <h3>👥 Отношения с персонажами</h3>
-            <div class="relationships-list">
-              <div
-                v-for="(relationType, relativeId) in fullDetailsHero.relationships"
-                :key="relativeId"
-                class="relationship-item"
-                @click="openRelativeDetails(relativeId)"
-              >
-                <img 
-                  :src="`/img/heroes/${relativeId}.jpg`" 
-                  :alt="idToName[relativeId]"
-                  class="relative-avatar-small"
-                  @error="onImgError"
-                />
-                <div class="relationship-details">
-                  <span class="relative-name">{{ idToName[relativeId] || relativeId }}</span>
-                  <span class="relationship-type">{{ relationType }}</span>
-                  <span class="relative-family">{{ getHeroFamily(relativeId) }}</span>
+    <div v-if="fullDetailsHero" class="popup-overlay full-details-overlay" @click="closeFullDetails">
+      <div class="full-details-popup" @click.stop>
+        <button class="close-btn" @click="closeFullDetails">×</button>
+        <div class="full-details-content">
+          <!-- ... остальной код без изменений ... -->
+          
+          <div class="details-body">
+            <!-- ... другие секции без изменений ... -->
+            
+            <div class="details-grid">
+              <!-- Отношения -->
+              <section v-if="fullDetailsHero.relationships && Object.keys(fullDetailsHero.relationships).length" class="relationships-details">
+                <h3>👥 Отношения с персонажами</h3>
+                <div class="relationships-list">
+                  <div
+                    v-for="(relationType, relativeId) in fullDetailsHero.relationships"
+                    :key="relativeId"
+                    class="relationship-item"
+                    @click="openRelativeDetails(relativeId)"
+                  >
+                    <img 
+                      :src="`/img/heroes/${relativeId}.jpg`" 
+                      :alt="idToName[relativeId]"
+                      class="relative-avatar-small"
+                      @error="onImgError"
+                    />
+                    <div class="relationship-details">
+                      <span class="relative-name">{{ idToName[relativeId] || relativeId }}</span>
+                      <span class="relationship-type">{{ relationType }}</span>
+                      <span class="relative-family">{{ getHeroFamily(relativeId) }}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </section>
-          <!-- Ссылки на текст -->
-          <section v-if="fullDetailsHero.textLinks?.length" class="text-links-section">
-            <h3>📚 Текстовые ссылки на фрагменты</h3>
-            <div class="text-links-list">
-              <div
-                v-for="(textLink, index) in fullDetailsHero.textLinks"
-                :key="index"
-                class="text-link-item"
-                @click="openPDFViewer(textLink)"
-              >
-                <span class="text-link-icon">📖</span>
-                <div class="text-link-content">
-                  <span class="text-link-ref">{{ formatTextLink(textLink) }}</span>
-                  <span class="text-link-desc">{{ getTextLinkDescription(textLink) }}</span>
+              </section>
+              
+              <!-- Ссылки на текст -->
+              <section v-if="heroTextFragments.length" class="text-links-section">
+                <h3>📚 Текстовые фрагменты с участием персонажа</h3>
+                <div class="text-links-list">
+                  <RouterLink
+                    v-for="fragment in heroTextFragments"
+                    :key="fragment.id"
+                    :to="`/text/${fragment.id}`"
+                    class="text-link-item"
+                  >
+                    <span class="text-link-icon">📖</span>
+                    <div class="text-link-content">
+                      <span class="text-link-title">{{ fragment.title }}</span>
+                      <span class="text-link-desc">{{ getTextLinkDescription(fragment) }}</span>
+                    </div>
+                  </RouterLink>
                 </div>
-              </div>
+              </section>
+              
+              <!-- События с участием персонажа -->
+              <section v-if="heroEvents.length" class="events-section">
+                <h3>📅 События с участием персонажа</h3>
+                <div class="events-list">
+                  <RouterLink
+                    v-for="event in heroEvents"
+                    :key="event.id"
+                    :to="`/events/${event.id}`"
+                    class="event-link"
+                  >
+                    <span class="event-title">{{ event.title }}</span>
+                    <span class="event-date">{{ formatEventDate(event.date) }}</span>
+                  </RouterLink>
+                </div>
+              </section>
             </div>
-          </section>
-          <!-- События -->
-          <section v-if="fullDetailsHero.links?.events?.length" class="events-section">
-            <h3>📅 События с участием персонажа</h3>
-            <div class="events-list">
-              <RouterLink
-                v-for="eventId in fullDetailsHero.links.events"
-                :key="eventId"
-                :to="`/events/${eventId}`"
-                class="event-link"
-              >
-                <span class="event-title">{{ eventsById[eventId]?.title || eventId }}</span>
-                <span class="event-date">{{ formatEventDate(eventsById[eventId]?.date) }}</span>
-              </RouterLink>
-            </div>
-          </section>
-        </div>
-
-        <!-- PDF Viewer Modal -->
-        <div v-if="showPDFViewer" class="pdf-viewer-overlay" @click="closePDFViewer">
-          <div class="pdf-viewer-content" @click.stop>
-            <button class="close-btn" @click="closePDFViewer">×</button>
-            <iframe :src="currentPDFUrl" width="100%" height="100%"></iframe>
           </div>
         </div>
       </div>
     </div>
-  </div>
   </section>
 </template>
 
@@ -258,50 +243,16 @@ import { computed, ref, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useData } from '../composables/useData.js'
 import SearchBox from '../components/SearchBox.vue'
-import { generateTextLink, getTextLinkWithFallback, getTextLinkDescription, formatTextLink } from '../../public/data/linking/textLinks.js'
-import { textLinksMap } from '../../public/data/linking/textLinksMap.js'
-import { put } from "@vercel/blob";
 
-const { loadAll, loading, error, heroes, eventsById } = useData()
+const { loadAll, loading, error, heroes, events, eventsById, textFragments, textFragmentsById } = useData()
 const route = useRoute()
 const router = useRouter()
 const q = ref('')
+
 // State management
 const selectedHero = ref(null)
 const selectedRelative = ref(null)
 const fullDetailsHero = ref(null)
-const pdfUrl = ref(''); // URL для PDF файла
-const showPDFViewer = ref(false); // Флаг для отображения PDF Viewer
-const currentPDFUrl = ref(''); // Текущий URL PDF для отображения
-
-// Функция для загрузки PDF-файла на Vercel Blob
-// Функция для открытия PDF Viewer
-const openPDFViewer = (textLink) => {
-  // Здесь вы можете использовать textLink для получения правильного PDF
-  // Например, если textLink соответствует определенному PDF файлу
-  currentPDFUrl.value = pdfUrl.value; // Или используйте другую логику для получения URL
-  showPDFViewer.value = true;
-};
-
-// Функция для закрытия PDF Viewer
-const closePDFViewer = () => {
-  showPDFViewer.value = false;
-  currentPDFUrl.value = '';
-};
-
-async function uploadPDF(filePath, fileName) {
-  try {
-    const response = await fetch(filePath);
-    const fileBlob = await response.blob();
-    const blob = await put(`pdfs/${fileName}`, fileBlob, {
-      access: 'public',
-    });
-    return blob.url;
-  } catch (error) {
-    console.error('Ошибка при загрузке PDF:', error);
-    return null;
-  }
-}
 
 const idToName = computed(() => {
   if (!heroes.value) return {}
@@ -310,18 +261,10 @@ const idToName = computed(() => {
   return m
 })
 
-const getTextLink = (textLink) => {
-  return getTextLinkWithFallback(textLink);
-};
-
 const getHeroFamily = (heroId) => {
   const hero = heroes.value?.find(h => h.id === heroId)
   return hero?.family || ''
 }
-
-const getTextLinkTitle = (textLink) => {
-  return textLinksMap[textLink]?.title || formatTextLink(textLink);
-};
 
 const onImgError = (e) => {
   e.target.src = '/img/tolstoy.jpg'
@@ -343,19 +286,61 @@ const truncateQuote = (quote) => {
   return quote
 }
 
+// Текстовые фрагменты с участием персонажа
+const heroTextFragments = computed(() => {
+  if (!fullDetailsHero.value || !textFragments.value) return []
+  
+  return textFragments.value
+    .filter(fragment => 
+      fragment.heroes?.includes(fullDetailsHero.value.id)
+    )
+    .sort((a, b) => a.id.localeCompare(b.id))
+})
+
+// Функции для работы с текстовыми фрагментами
+const getTextLinkDescription = (fragment) => {
+  if (!fragment) return 'Фрагмент текста'
+  
+  const volumeNames = {
+    1: 'Том 1',
+    2: 'Том 2', 
+    3: 'Том 3',
+    4: 'Том 4',
+    'E': 'Эпилог'
+  }
+  
+  let description = `${volumeNames[fragment.volume] || 'Том'} • Глава ${fragment.chapter}`
+  
+  if (fragment.section) {
+    description += ` • Раздел ${fragment.section}`
+  }
+  
+  if (fragment.page) {
+    description += ` • Стр. ${fragment.page}`
+  }
+  
+  return description
+}
+
+// События с участием персонажа
+const heroEvents = computed(() => {
+  if (!fullDetailsHero.value || !events.value) return []
+  
+  return events.value.filter(event => 
+    event.participants?.includes(fullDetailsHero.value.id)
+  ).sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+})
+
 // Hero popup functions
 const scrollToPopup = () => {
   nextTick(() => {
     setTimeout(() => {
       const activePopup = document.querySelector('.hero-popup, .relative-popup, .full-details-popup')
-
       if (activePopup) {
         const rect = activePopup.getBoundingClientRect()
         const isMobile = window.innerWidth < 768
         const offset = isMobile ? 120 : 80
-
         const targetScroll = window.pageYOffset + rect.top - offset
-
         window.scrollTo({
           top: Math.max(0, targetScroll),
           behavior: 'smooth'
@@ -412,7 +397,6 @@ const filtered = computed(() => {
   if (!heroes.value) return []
   const t = q.value.trim().toLowerCase()
   if (!t) return heroes.value
-
   return heroes.value.filter(h => {
     const searchText = [
       h.name,
@@ -425,19 +409,13 @@ const filtered = computed(() => {
       ...(h.philosophical_views || []),
       ...(h.key_moments || [])
     ].join(' ').toLowerCase()
-
     return searchText.includes(t)
   })
 })
 
 onMounted(async () => {
-  await loadAll();
-  // Загружаем PDF файл при монтировании компонента
-  const url = await uploadPDF('/text.pdf', 'text.pdf');
-  if (url) {
-    pdfUrl.value = url;
-  }
-
+  await loadAll()
+  
   if (route.query.heroId && heroes.value) {
     const heroId = route.query.heroId
     const hero = heroes.value.find(h => h.id === heroId)
@@ -460,8 +438,108 @@ watch(
 )
 </script>
 
-
 <style scoped>
+/* Все стили остаются такими же, только обновляем стили для текстовых ссылок и событий */
+
+.text-links-section {
+  margin: 32px 0;
+  padding: 20px;
+  background: rgba(187, 148, 87, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(187, 148, 87, 0.1);
+}
+
+.text-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.text-link-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid var(--line);
+  background: var(--card);
+  text-decoration: none;
+  color: inherit;
+}
+
+.text-link-item:hover {
+  background: rgba(187, 148, 87, 0.1);
+  border-color: var(--peach);
+  transform: translateX(4px);
+  text-decoration: none;
+}
+
+.text-link-icon {
+  font-size: 1.2em;
+}
+
+.text-link-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.text-link-ref {
+  font-weight: 500;
+  color: var(--peach);
+}
+
+.text-link-desc {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.events-section {
+  margin: 32px 0;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.event-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border: 1px solid var(--line);
+  background: var(--card);
+  text-decoration: none;
+  color: inherit;
+}
+
+.event-link:hover {
+  background: rgba(187, 148, 87, 0.1);
+  border-color: var(--peach);
+  text-decoration: none;
+  transform: translateX(4px);
+}
+
+.event-title {
+  font-weight: 500;
+  color: var(--peach);
+  flex: 1;
+}
+
+.event-date {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+  margin-left: 12px;
+}
+
+/* Остальные стили остаются без изменений */
 .heroes-page {
   position: relative;
   min-height: 100vh;
@@ -1001,7 +1079,7 @@ watch(
   align-items: flex-start;
   gap: 12px;
   padding: 12px;
-  background: #432818;
+  background: var(--card);
   border-radius: 8px;
   border: 1px solid var(--line);
   transition: all 0.3s ease;
@@ -1014,7 +1092,7 @@ watch(
 
 .moment-number {
   background: var(--peach);
-  color: #432818;;
+  color: white;
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -1039,7 +1117,7 @@ watch(
 
 .quote-item {
   padding: 16px;
-  background: #432818;
+  background: var(--card);
   border-radius: 8px;
   border-left: 4px solid var(--peach);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -1106,76 +1184,6 @@ watch(
   color: var(--peach);
   font-style: italic;
   margin: 2px 0;
-}
-
-.text-links-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.text-link-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid var(--line);
-  background: #432818;;
-}
-
-.text-link-item:hover {
-  background: rgba(187, 148, 87, 0.1);
-  border-color: var(--peach);
-  transform: translateX(4px);
-}
-
-.text-link-icon {
-  font-size: 1.2em;
-}
-
-.text-link-ref {
-  font-weight: 500;
-  color: var(--peach);
-}
-
-.events-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.event-link {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--peach);
-  text-decoration: none;
-  padding: 12px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  border: 1px solid var(--line);
-  background: white;
-}
-
-.event-link:hover {
-  background: rgba(187, 148, 87, 0.1);
-  border-color: var(--peach);
-  text-decoration: none;
-  transform: translateX(4px);
-}
-
-.event-title {
-  font-weight: 500;
-  flex: 1;
-}
-
-.event-date {
-  font-size: 0.9em;
-  color: var(--text-secondary);
-  margin-left: 12px;
 }
 
 /* Responsive Design */

@@ -6,8 +6,17 @@
         Назад к событиям
       </RouterLink>
     </div>
-    
-    <section v-if="ev" class="card event-card">
+
+    <section v-if="loading" class="card event-card">
+      <p>Загрузка...</p>
+    </section>
+
+    <section v-else-if="error" class="card event-card">
+      <p class="error-message">Ошибка загрузки: {{ error }}</p>
+      <button @click="loadAll" class="retry-button">Повторить</button>
+    </section>
+
+    <section v-else-if="ev" class="card event-card">
       <div class="event-header">
         <h1 class="event-title">{{ ev.title }}</h1>
         <div class="event-meta">
@@ -29,8 +38,8 @@
             class="participant-card"
             @click="navigateToHero(pid)"
           >
-            <img 
-              :src="`/img/heroes/${pid}.jpg`" 
+            <img
+              :src="`/img/heroes/${pid}.jpg`"
               :alt="heroesById[pid]?.name"
               class="participant-avatar"
               @error="onImgError"
@@ -86,51 +95,37 @@
         <h2 class="section-subtitle">Развитие персонажей</h2>
         <p class="event-character">{{ ev.character_development }}</p>
       </div>
-
-      <!-- Цитаты -->
-      <div v-if="ev.quotes?.length" class="quotes-section">
-        <h2 class="section-subtitle">Цитаты</h2>
-        <div class="quotes-list">
-          <blockquote 
-            v-for="(quote, index) in ev.quotes" 
-            :key="index" 
-            class="quote-item"
-          >
-            "{{ quote }}"
-          </blockquote>
+  <!-- Текстовые фрагменты -->
+  <section v-if="eventFragments.length" class="text-fragments-section">
+    <h2 class="section-subtitle">📖 Текстовые фрагменты</h2>
+    <div class="text-fragments-list">
+      <RouterLink
+        v-for="fragment in eventFragments"
+        :key="fragment.id"
+        :to="`/text/${fragment.id}`"
+        class="text-fragment-card"
+      >
+        <div class="fragment-header">
+          <h4>{{ fragment.title }}</h4>
+          <span class="fragment-ref">{{ fragment.id }}</span>
         </div>
-      </div>
-
-      <!-- Текстовые ссылки -->
-      <section v-if="eventTextLinks.length" class="text-links-section">
-        <h2 class="section-subtitle">📚 Текстовые ссылки на фрагменты</h2>
-        <div class="text-links-list">
-          <a
-            v-for="(textLink, index) in eventTextLinks"
-            :key="index"
-            :href="getTextLink(textLink)"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-link-item"
-            @click.stop
-          >
-            <span class="text-link-icon">📖</span>
-            <div class="text-link-content">
-              <span class="text-link-ref">{{ formatTextLink(textLink) }}</span>
-              <span class="text-link-desc">{{ getTextLinkDescription(textLink) }}</span>
-            </div>
-            <span class="external-link-icon">↗</span>
-          </a>
+        <p class="fragment-preview">{{ truncateText(fragment.text, 150) }}</p>
+        <div class="fragment-meta">
+          <span>Том {{ fragment.volume }}</span>
+          <span>Глава {{ fragment.chapter }}</span>
+          <span>Раздел {{ fragment.section }}</span>
         </div>
-      </section>
+      </RouterLink>
+    </div>
+  </section>
 
       <!-- Изображение события -->
       <div class="event-image-section">
-        <img 
-          class="event-image" 
-          :src="`/img/events/${ev.id}.jpg`" 
+        <img
+          class="event-image"
+          :src="`/img/events/${ev.id}.jpg`"
           :alt="ev.title"
-          @error="onImgError" 
+          @error="onImgError"
         />
       </div>
 
@@ -164,11 +159,10 @@
 </template>
 
 <script setup>
+
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useData } from '../composables/useData.js'
-import { getTextLinkWithFallback, getTextLinkDescription, formatTextLink } from '../../public/data/linking/textLinks.js'
-import { textLinksMap } from '../../public/data/linking/textLinksMap.js'
 
 const props = defineProps({
   id: {
@@ -179,30 +173,19 @@ const props = defineProps({
 
 const route = useRoute()
 const router = useRouter()
-const { loadAll, eventsById, heroesById, locationsById, events } = useData()
+const { loadAll, eventsById, heroesById, locationsById, events, textFragments } = useData()
 
 onMounted(loadAll)
 
 const ev = computed(() => eventsById.value[props.id])
 const loc = computed(() => ev.value ? locationsById.value[ev.value.placeId] : null)
 
-// Обработка текстовых ссылок для событий
-const eventTextLinks = computed(() => {
-  if (!ev.value) return []
-  
-  const links = []
-  
-  // Если есть поле textLink (строка)
-  if (ev.value.textLink) {
-    links.push(ev.value.textLink)
-  }
-  
-  // Если есть поле textLinks (массив)
-  if (ev.value.textLinks?.length) {
-    links.push(...ev.value.textLinks)
-  }
-  
-  return links
+// Фрагменты текста для этого события
+const eventFragments = computed(() => {
+  if (!textFragments.value || !ev.value) return []
+  return textFragments.value.filter(fragment => 
+    fragment.eventId === ev.value.id
+  ).sort((a, b) => a.id.localeCompare(b.id))
 })
 
 // Похожие события (по типу или участникам)
@@ -218,13 +201,7 @@ const relatedEvents = computed(() => {
     .slice(0, 3) // Ограничиваем 3 событиями
 })
 
-const getTextLink = (textLink) => {
-  return getTextLinkWithFallback(textLink);
-};
-
-const getTextLinkTitle = (textLink) => {
-  return textLinksMap[textLink]?.title || formatTextLink(textLink);
-};
+// Обработка текстовых ссылок для событий
 
 const navigateToHero = (heroId) => {
   router.push({
@@ -280,9 +257,86 @@ const formatTheme = (theme) => {
   }
   return themes[theme] || theme
 }
+
+const truncateText = (text, length) => {
+  if (!text) return ''
+  return text.length > length ? text.substring(0, length) + '...' : text
+}
+
+// Функции для работы с текстовыми ссылками
+
 </script>
 
 <style scoped>
+.text-fragments-section {
+  margin: 32px 0;
+  padding: 20px;
+  background: rgba(187, 148, 87, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(187, 148, 87, 0.1);
+}
+
+.text-fragments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.text-fragment-card {
+  display: block;
+  padding: 16px;
+  background: var(--card);
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+.text-fragment-card:hover {
+  border-color: var(--peach);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+}
+
+.fragment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.fragment-header h4 {
+  margin: 0;
+  color: var(--peach);
+  font-size: 1.1em;
+  flex: 1;
+}
+
+.fragment-ref {
+  background: var(--peach);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.fragment-preview {
+  margin: 0 0 8px;
+  line-height: 1.5;
+  font-size: 0.9em;
+  color: var(--text);
+}
+
+.fragment-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8em;
+  color: var(--text-secondary);
+}
 .events-detail-page {
   min-height: 100vh;
   background: var(--background);
@@ -711,5 +765,74 @@ const formatTheme = (theme) => {
   .back-card {
     max-width: 900px;
   }
+}
+.text-fragments-section {
+  margin: 32px 0;
+  padding: 20px;
+  background: rgba(187, 148, 87, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(187, 148, 87, 0.1);
+}
+
+.text-fragments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.text-fragment-card {
+  display: block;
+  padding: 16px;
+  background: var(--card);
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+.text-fragment-card:hover {
+  border-color: var(--peach);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+}
+
+.fragment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.fragment-header h4 {
+  margin: 0;
+  color: var(--peach);
+  font-size: 1.1em;
+  flex: 1;
+}
+
+.fragment-ref {
+  background: var(--peach);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.fragment-preview {
+  margin: 0 0 8px;
+  line-height: 1.5;
+  font-size: 0.9em;
+  color: var(--text);
+}
+
+.fragment-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8em;
+  color: var(--text-secondary);
 }
 </style>

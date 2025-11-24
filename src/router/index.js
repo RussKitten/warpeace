@@ -9,6 +9,7 @@ const ThemesList = () => import('@/views/ThemesList.vue')
 const ThemeDetail = () => import('@/views/ThemeDetail.vue')
 const TimelineView = () => import('@/views/TimelineView.vue')
 const MapView = () => import('@/views/MapView.vue')
+const TextView = () => import('@/views/TextFragmentPage.vue')
 
 const router = createRouter({
   history: createWebHistory(),
@@ -21,7 +22,11 @@ const router = createRouter({
     { path: '/themes', component: ThemesList },
     { path: '/themes/:id', component: ThemeDetail, props: true },
     { path: '/timeline', component: TimelineView },
-    { path: '/map', component: MapView }
+    { path: '/map', component: MapView },
+    // В вашем router/index.js добавьте:
+    {
+    path: '/text/:id',name: 'text-fragment', component: TextView, props: true
+    }
   ],
   scrollBehavior() { return { top: 0 } }
 })
