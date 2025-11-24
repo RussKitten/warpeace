@@ -165,10 +165,78 @@
       <div class="full-details-popup" @click.stop>
         <button class="close-btn" @click="closeFullDetails">×</button>
         <div class="full-details-content">
-          <!-- ... остальной код без изменений ... -->
-          
+          <div class="details-header">
+            <img 
+              :src="`/img/heroes/${fullDetailsHero.id}.jpg`" 
+              :alt="fullDetailsHero.name"
+              class="details-hero-img"
+              @error="onImgError"
+            />
+            <div class="details-title">
+              <h1>{{ fullDetailsHero.name }}</h1>
+              <p class="hero-family-large">{{ fullDetailsHero.family }}</p>
+              <div v-if="fullDetailsHero.aliases?.length" class="aliases">
+                <strong>Также известен как:</strong>
+                <div class="aliases-list">
+                  <span v-for="alias in fullDetailsHero.aliases" :key="alias" class="alias-tag">
+                    {{ alias }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="details-body">
-            <!-- ... другие секции без изменений ... -->
+            <!-- Символика -->
+            <section v-if="fullDetailsHero.symbolism" class="symbolism-section">
+              <h3>🎭 Символика персонажа</h3>
+              <p class="symbolism-text">{{ fullDetailsHero.symbolism }}</p>
+            </section>
+            <section class="bio-section">
+              <h3>📖 Биография</h3>
+              <p class="full-bio">{{ fullDetailsHero.bio }}</p>
+            </section>
+            <!-- Философские взгляды -->
+            <section v-if="fullDetailsHero.philosophical_views?.length" class="philosophy-section">
+              <h3>💭 Философские взгляды</h3>
+              <div class="philosophy-grid">
+                <div 
+                  v-for="(view, index) in fullDetailsHero.philosophical_views" 
+                  :key="index"
+                  class="philosophy-item"
+                >
+                  {{ view }}
+                </div>
+              </div>
+            </section>
+            <!-- Ключевые моменты -->
+            <section v-if="fullDetailsHero.key_moments?.length" class="key-moments-section">
+              <h3>⭐ Ключевые моменты развития</h3>
+              <div class="key-moments-list">
+                <div 
+                  v-for="(moment, index) in fullDetailsHero.key_moments" 
+                  :key="index"
+                  class="key-moment-item"
+                >
+                  <span class="moment-number">{{ index + 1 }}</span>
+                  <span class="moment-text">{{ moment }}</span>
+                </div>
+              </div>
+            </section>
+            <!-- Цитаты -->
+            <section v-if="fullDetailsHero.quotes?.length" class="quotes-section">
+              <h3>💬 Характерные цитаты</h3>
+              <div class="quotes-list">
+                <div 
+                  v-for="(quote, index) in fullDetailsHero.quotes" 
+                  :key="index"
+                  class="quote-item"
+                >
+                  <div class="quote-text">"{{ quote }}"</div>
+                </div>
+              </div>
+            </section>
+
+          
             
             <div class="details-grid">
               <!-- Отношения -->
