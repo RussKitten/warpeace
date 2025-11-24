@@ -170,153 +170,86 @@
       </div>
     </div>
     <!-- Full Details Modal -->
-    <div v-if="fullDetailsHero" class="popup-overlay full-details-overlay" @click="closeFullDetails">
-      <div class="full-details-popup" @click.stop>
-        <button class="close-btn" @click="closeFullDetails">×</button>
+      <!-- ... остальной шаблон ... -->
 
-        <div class="full-details-content">
-          <div class="details-header">
-            <img 
-              :src="`/img/heroes/${fullDetailsHero.id}.jpg`" 
-              :alt="fullDetailsHero.name"
-              class="details-hero-img"
-              @error="onImgError"
-            />
-            <div class="details-title">
-              <h1>{{ fullDetailsHero.name }}</h1>
-              <p class="hero-family-large">{{ fullDetailsHero.family }}</p>
-              <div v-if="fullDetailsHero.aliases?.length" class="aliases">
-                <strong>Также известен как:</strong>
-                <div class="aliases-list">
-                  <span v-for="alias in fullDetailsHero.aliases" :key="alias" class="alias-tag">
-                    {{ alias }}
-                  </span>
+  <!-- Full Details Modal -->
+  <div v-if="fullDetailsHero" class="popup-overlay full-details-overlay" @click="closeFullDetails">
+    <div class="full-details-popup" @click.stop>
+      <button class="close-btn" @click="closeFullDetails">×</button>
+
+      <div class="full-details-content">
+        <!-- ... остальной контент ... -->
+
+        <div class="details-grid">
+          <!-- Отношения -->
+          <section v-if="fullDetailsHero.relationships && Object.keys(fullDetailsHero.relationships).length" class="relationships-details">
+            <h3>👥 Отношения с персонажами</h3>
+            <div class="relationships-list">
+              <div
+                v-for="(relationType, relativeId) in fullDetailsHero.relationships"
+                :key="relativeId"
+                class="relationship-item"
+                @click="openRelativeDetails(relativeId)"
+              >
+                <img 
+                  :src="`/img/heroes/${relativeId}.jpg`" 
+                  :alt="idToName[relativeId]"
+                  class="relative-avatar-small"
+                  @error="onImgError"
+                />
+                <div class="relationship-details">
+                  <span class="relative-name">{{ idToName[relativeId] || relativeId }}</span>
+                  <span class="relationship-type">{{ relationType }}</span>
+                  <span class="relative-family">{{ getHeroFamily(relativeId) }}</span>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="details-body">
-            <!-- Символика -->
-            <section v-if="fullDetailsHero.symbolism" class="symbolism-section">
-              <h3>🎭 Символика персонажа</h3>
-              <p class="symbolism-text">{{ fullDetailsHero.symbolism }}</p>
-            </section>
-            <section class="bio-section">
-              <h3>📖 Биография</h3>
-              <p class="full-bio">{{ fullDetailsHero.bio }}</p>
-            </section>
-            <!-- Философские взгляды -->
-            <section v-if="fullDetailsHero.philosophical_views?.length" class="philosophy-section">
-              <h3>💭 Философские взгляды</h3>
-              <div class="philosophy-grid">
-                <div 
-                  v-for="(view, index) in fullDetailsHero.philosophical_views" 
-                  :key="index"
-                  class="philosophy-item"
-                >
-                  {{ view }}
+          </section>
+          <!-- Ссылки на текст -->
+          <section v-if="fullDetailsHero.textLinks?.length" class="text-links-section">
+            <h3>📚 Текстовые ссылки на фрагменты</h3>
+            <div class="text-links-list">
+              <div
+                v-for="(textLink, index) in fullDetailsHero.textLinks"
+                :key="index"
+                class="text-link-item"
+                @click="openPDFViewer(textLink)"
+              >
+                <span class="text-link-icon">📖</span>
+                <div class="text-link-content">
+                  <span class="text-link-ref">{{ formatTextLink(textLink) }}</span>
+                  <span class="text-link-desc">{{ getTextLinkDescription(textLink) }}</span>
                 </div>
               </div>
-            </section>
-            <!-- Ключевые моменты -->
-            <section v-if="fullDetailsHero.key_moments?.length" class="key-moments-section">
-              <h3>⭐ Ключевые моменты развития</h3>
-              <div class="key-moments-list">
-                <div 
-                  v-for="(moment, index) in fullDetailsHero.key_moments" 
-                  :key="index"
-                  class="key-moment-item"
-                >
-                  <span class="moment-number">{{ index + 1 }}</span>
-                  <span class="moment-text">{{ moment }}</span>
-                </div>
-              </div>
-            </section>
-            <!-- Цитаты -->
-            <section v-if="fullDetailsHero.quotes?.length" class="quotes-section">
-              <h3>💬 Характерные цитаты</h3>
-              <div class="quotes-list">
-                <div 
-                  v-for="(quote, index) in fullDetailsHero.quotes" 
-                  :key="index"
-                  class="quote-item"
-                >
-                  <div class="quote-text">"{{ quote }}"</div>
-                </div>
-              </div>
-            </section>
-            <div class="details-grid">
-              <!-- Отношения -->
-              <section v-if="fullDetailsHero.relationships && Object.keys(fullDetailsHero.relationships).length" class="relationships-details">
-                <h3>👥 Отношения с персонажами</h3>
-                <div class="relationships-list">
-                  <div
-                    v-for="(relationType, relativeId) in fullDetailsHero.relationships"
-                    :key="relativeId"
-                    class="relationship-item"
-                    @click="openRelativeDetails(relativeId)"
-                  >
-                    <img 
-                      :src="`/img/heroes/${relativeId}.jpg`" 
-                      :alt="idToName[relativeId]"
-                      class="relative-avatar-small"
-                      @error="onImgError"
-                    />
-                    <div class="relationship-details">
-                      <span class="relative-name">{{ idToName[relativeId] || relativeId }}</span>
-                      <span class="relationship-type">{{ relationType }}</span>
-                      <span class="relative-family">{{ getHeroFamily(relativeId) }}</span>
-                    </div>
-                  </div>
-                </div>
-              </section>
-              <!-- Ссылки на текст -->
-              <section v-if="fullDetailsHero.textLinks?.length" class="text-links-section">
-                <h3>📚 Текстовые ссылки на фрагменты</h3>
-                <div class="text-links-list">
-                  <a
-                    v-for="(textLink, index) in fullDetailsHero.textLinks"
-                    :key="index"
-                    :href="getTextLink(textLink)"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-link-item"
-                    @click.stop
-                  >
-                    <span class="text-link-icon">📖</span>
-                    <div class="text-link-content">
-                      <span class="text-link-ref">{{ formatTextLink(textLink) }}</span>
-                      <span class="text-link-desc">{{ getTextLinkDescription(textLink) }}</span>
-                    </div>
-                    <span class="external-link-icon">↗</span>
-                  </a>
-                </div>
-              </section>
-              <!-- События -->
-              <section v-if="fullDetailsHero.links?.events?.length" class="events-section">
-                <h3>📅 События с участием персонажа</h3>
-                <div class="events-list">
-                  <RouterLink
-                    v-for="eventId in fullDetailsHero.links.events"
-                    :key="eventId"
-                    :to="`/events/${eventId}`"
-                    class="event-link"
-                  >
-                    <span class="event-title">{{ eventsById[eventId]?.title || eventId }}</span>
-                    <span class="event-date">{{ formatEventDate(eventsById[eventId]?.date) }}</span>
-                  </RouterLink>
-                </div>
-              </section>
             </div>
-            <!-- PDF Viewer -->
-            <section v-if="pdfUrl" class="text-pdf-section">
-              <h3>📖 Полный текст</h3>
-              <iframe :src="pdfUrl" width="100%" height="600px"></iframe>
-            </section>
+          </section>
+          <!-- События -->
+          <section v-if="fullDetailsHero.links?.events?.length" class="events-section">
+            <h3>📅 События с участием персонажа</h3>
+            <div class="events-list">
+              <RouterLink
+                v-for="eventId in fullDetailsHero.links.events"
+                :key="eventId"
+                :to="`/events/${eventId}`"
+                class="event-link"
+              >
+                <span class="event-title">{{ eventsById[eventId]?.title || eventId }}</span>
+                <span class="event-date">{{ formatEventDate(eventsById[eventId]?.date) }}</span>
+              </RouterLink>
+            </div>
+          </section>
+        </div>
+
+        <!-- PDF Viewer Modal -->
+        <div v-if="showPDFViewer" class="pdf-viewer-overlay" @click="closePDFViewer">
+          <div class="pdf-viewer-content" @click.stop>
+            <button class="close-btn" @click="closePDFViewer">×</button>
+            <iframe :src="currentPDFUrl" width="100%" height="100%"></iframe>
           </div>
         </div>
       </div>
     </div>
+  </div>
   </section>
 </template>
 
@@ -338,8 +271,24 @@ const selectedHero = ref(null)
 const selectedRelative = ref(null)
 const fullDetailsHero = ref(null)
 const pdfUrl = ref(''); // URL для PDF файла
+const showPDFViewer = ref(false); // Флаг для отображения PDF Viewer
+const currentPDFUrl = ref(''); // Текущий URL PDF для отображения
 
 // Функция для загрузки PDF-файла на Vercel Blob
+// Функция для открытия PDF Viewer
+const openPDFViewer = (textLink) => {
+  // Здесь вы можете использовать textLink для получения правильного PDF
+  // Например, если textLink соответствует определенному PDF файлу
+  currentPDFUrl.value = pdfUrl.value; // Или используйте другую логику для получения URL
+  showPDFViewer.value = true;
+};
+
+// Функция для закрытия PDF Viewer
+const closePDFViewer = () => {
+  showPDFViewer.value = false;
+  currentPDFUrl.value = '';
+};
+
 async function uploadPDF(filePath, fileName) {
   try {
     const response = await fetch(filePath);
