@@ -1,3 +1,4 @@
+// useData.js (обновленный файл)
 import { ref, computed } from 'vue'
 
 const loaded = ref(false)
@@ -120,6 +121,29 @@ async function updateFragment(fragmentId, updatedData) {
   }
 }
 
+// Новая функция для экспорта обновленного JSON и скачивания файла
+function exportUpdatedJson() {
+  try {
+    const updatedJson = JSON.stringify(textFragments.value, null, 2)
+    const blob = new Blob([updatedJson], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    
+    // Создаем ссылку для скачивания
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'text-fragments-updated.json'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    
+    console.log('Updated JSON exported and downloaded successfully')
+  } catch (err) {
+    console.error('Error exporting JSON:', err)
+    alert('Ошибка при экспорте JSON файла')
+  }
+}
+
 // Функция для сброса изменений фрагмента
 function resetFragment(fragmentId) {
   try {
@@ -170,6 +194,7 @@ export function useData() {
     heroesById, eventsById, themesById, locationsById, textFragmentsById,
     updateFragment,
     resetFragment,
-    getOriginalFragment
+    getOriginalFragment,
+    exportUpdatedJson  // Добавляем новую функцию в экспорт
   }
 }

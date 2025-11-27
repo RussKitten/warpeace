@@ -234,7 +234,7 @@ import { useData } from '../composables/useData.js'
 
 const route = useRoute()
 const router = useRouter()
-const { loadAll, loading, error, eventsById, heroesById, heroes, textFragments, updateFragment } = useData()
+const { loadAll, loading, error, eventsById, heroesById, heroes, textFragments, updateFragment, exportUpdatedJson } = useData()
 
 const fragmentId = computed(() => route.params.id)
 const fragment = computed(() => 
@@ -313,6 +313,9 @@ const saveFragment = async () => {
   isSaving.value = true
   try {
     await updateFragment(fragment.value.id, editableFragment.value)
+    
+    // После сохранения экспортируем обновленный JSON и скачиваем его
+    exportUpdatedJson()
     
     // Показываем уведомление
     showSaveNotification.value = true
