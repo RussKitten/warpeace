@@ -42,7 +42,7 @@
               :src="`/img/heroes/${pid}.jpg`"
               :alt="heroesById[pid]?.name"
               class="participant-avatar"
-              @error="onImgError"
+              @error="(e) => e.target.style.display = 'none'"
             />
             <span class="participant-name">{{ heroesById[pid]?.name || pid }}</span>
             <span class="participant-family">{{ heroesById[pid]?.family }}</span>
@@ -95,29 +95,30 @@
         <h2 class="section-subtitle">Развитие персонажей</h2>
         <p class="event-character">{{ ev.character_development }}</p>
       </div>
-  <!-- Текстовые фрагменты -->
-  <section v-if="eventFragments.length" class="text-fragments-section">
-    <h2 class="section-subtitle">📖 Текстовые фрагменты</h2>
-    <div class="text-fragments-list">
-      <RouterLink
-        v-for="fragment in eventFragments"
-        :key="fragment.id"
-        :to="`/text/${fragment.id}`"
-        class="text-fragment-card"
-      >
-        <div class="fragment-header">
-          <h4>{{ fragment.title }}</h4>
-          <span class="fragment-ref">{{ fragment.id }}</span>
+
+      <!-- Текстовые фрагменты -->
+      <section v-if="eventFragments.length" class="text-fragments-section">
+        <h2 class="section-subtitle">📖 Текстовые фрагменты</h2>
+        <div class="text-fragments-list">
+          <RouterLink
+            v-for="fragment in eventFragments"
+            :key="fragment.id"
+            :to="`/text/${fragment.id}`"
+            class="text-fragment-card"
+          >
+            <div class="fragment-header">
+              <h4>{{ fragment.title }}</h4>
+              <span class="fragment-ref">{{ fragment.id }}</span>
+            </div>
+            <p class="fragment-preview">{{ truncateText(fragment.text, 150) }}</p>
+            <div class="fragment-meta">
+              <span>Том {{ fragment.volume }}</span>
+              <span>Глава {{ fragment.chapter }}</span>
+              <span>Раздел {{ fragment.section }}</span>
+            </div>
+          </RouterLink>
         </div>
-        <p class="fragment-preview">{{ truncateText(fragment.text, 150) }}</p>
-        <div class="fragment-meta">
-          <span>Том {{ fragment.volume }}</span>
-          <span>Глава {{ fragment.chapter }}</span>
-          <span>Раздел {{ fragment.section }}</span>
-        </div>
-      </RouterLink>
-    </div>
-  </section>
+      </section>
 
       <!-- Изображение события -->
       <div class="event-image-section">
@@ -125,7 +126,7 @@
           class="event-image"
           :src="`/img/events/${ev.id}.jpg`"
           :alt="ev.title"
-          @error="onImgError"
+          @error="(e) => e.target.style.display = 'none'"
         />
       </div>
 
@@ -159,7 +160,6 @@
 </template>
 
 <script setup>
-
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useData } from '../composables/useData.js'
@@ -201,17 +201,11 @@ const relatedEvents = computed(() => {
     .slice(0, 3) // Ограничиваем 3 событиями
 })
 
-// Обработка текстовых ссылок для событий
-
 const navigateToHero = (heroId) => {
   router.push({
     path: '/heroes',
     query: { heroId }
   })
-}
-
-const onImgError = (e) => {
-  e.target.src = '/img/tolstoy.jpg'
 }
 
 const formatDate = (dateString) => {
@@ -262,81 +256,9 @@ const truncateText = (text, length) => {
   if (!text) return ''
   return text.length > length ? text.substring(0, length) + '...' : text
 }
-
-// Функции для работы с текстовыми ссылками
-
 </script>
 
 <style scoped>
-.text-fragments-section {
-  margin: 32px 0;
-  padding: 20px;
-  background: rgba(187, 148, 87, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(187, 148, 87, 0.1);
-}
-
-.text-fragments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.text-fragment-card {
-  display: block;
-  padding: 16px;
-  background: var(--card);
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  text-decoration: none;
-  color: inherit;
-  transition: all 0.3s ease;
-}
-
-.text-fragment-card:hover {
-  border-color: var(--peach);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  text-decoration: none;
-}
-
-.fragment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-
-.fragment-header h4 {
-  margin: 0;
-  color: var(--peach);
-  font-size: 1.1em;
-  flex: 1;
-}
-
-.fragment-ref {
-  background: var(--peach);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  font-weight: 500;
-  margin-left: 8px;
-}
-
-.fragment-preview {
-  margin: 0 0 8px;
-  line-height: 1.5;
-  font-size: 0.9em;
-  color: var(--text);
-}
-
-.fragment-meta {
-  display: flex;
-  gap: 12px;
-  font-size: 0.8em;
-  color: var(--text-secondary);
-}
 .events-detail-page {
   min-height: 100vh;
   background: var(--background);
@@ -477,6 +399,8 @@ const truncateText = (text, length) => {
   transition: all 0.3s ease;
   background: var(--card);
   text-align: center;
+  min-height: 140px;
+  justify-content: center;
 }
 
 .participant-card:hover {
@@ -547,29 +471,8 @@ const truncateText = (text, length) => {
   color: var(--peach);
 }
 
-/* Цитаты */
-.quotes-section {
-  margin: 32px 0;
-}
-
-.quotes-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.quote-item {
-  padding: 20px;
-  background: rgba(187, 148, 87, 0.05);
-  border-left: 4px solid var(--peach);
-  border-radius: 8px;
-  font-style: italic;
-  line-height: 1.6;
-  margin: 0;
-}
-
-/* Текстовые ссылки */
-.text-links-section {
+/* Текстовые фрагменты */
+.text-fragments-section {
   margin: 32px 0;
   padding: 20px;
   background: rgba(187, 148, 87, 0.05);
@@ -577,57 +480,66 @@ const truncateText = (text, length) => {
   border: 1px solid rgba(187, 148, 87, 0.1);
 }
 
-.text-links-list {
+.text-fragments-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
-.text-link-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
+.text-fragment-card {
+  display: block;
+  padding: 16px;
+  background: var(--card);
   border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
   border: 1px solid var(--line);
-  background: #432818;
   text-decoration: none;
   color: inherit;
+  transition: all 0.3s ease;
 }
 
-.text-link-item:hover {
-  background: rgba(187, 148, 87, 0.1);
+.text-fragment-card:hover {
   border-color: var(--peach);
-  transform: translateX(4px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   text-decoration: none;
 }
 
-.text-link-icon {
-  font-size: 1.2em;
+.fragment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
 }
 
-.text-link-content {
-  display: flex;
-  flex-direction: column;
+.fragment-header h4 {
+  margin: 0;
+  color: var(--peach);
+  font-size: 1.1em;
   flex: 1;
 }
 
-.text-link-ref {
+.fragment-ref {
+  background: var(--peach);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
   font-weight: 500;
-  color: var(--peach);
+  margin-left: 8px;
 }
 
-.text-link-desc {
+.fragment-preview {
+  margin: 0 0 8px;
+  line-height: 1.5;
   font-size: 0.9em;
-  color: var(--text-secondary);
-  margin-top: 2px;
+  color: var(--text);
 }
 
-.external-link-icon {
-  color: var(--peach);
-  font-weight: bold;
+.fragment-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8em;
+  color: var(--text-secondary);
 }
 
 /* Изображение */
@@ -765,74 +677,5 @@ const truncateText = (text, length) => {
   .back-card {
     max-width: 900px;
   }
-}
-.text-fragments-section {
-  margin: 32px 0;
-  padding: 20px;
-  background: rgba(187, 148, 87, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(187, 148, 87, 0.1);
-}
-
-.text-fragments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.text-fragment-card {
-  display: block;
-  padding: 16px;
-  background: var(--card);
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  text-decoration: none;
-  color: inherit;
-  transition: all 0.3s ease;
-}
-
-.text-fragment-card:hover {
-  border-color: var(--peach);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  text-decoration: none;
-}
-
-.fragment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-
-.fragment-header h4 {
-  margin: 0;
-  color: var(--peach);
-  font-size: 1.1em;
-  flex: 1;
-}
-
-.fragment-ref {
-  background: var(--peach);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  font-weight: 500;
-  margin-left: 8px;
-}
-
-.fragment-preview {
-  margin: 0 0 8px;
-  line-height: 1.5;
-  font-size: 0.9em;
-  color: var(--text);
-}
-
-.fragment-meta {
-  display: flex;
-  gap: 12px;
-  font-size: 0.8em;
-  color: var(--text-secondary);
 }
 </style>

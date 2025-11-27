@@ -39,60 +39,53 @@
     </div>
 
     <!-- Блок аргументов для сочинения -->
-    <div v-if="th.arguments?.length" class="theme-section">
+    <div v-if="groupedArguments?.length" class="theme-section">
       <h3 class="theme-subtitle">Аргументы для сочинения</h3>
       <div class="arguments-container">
         <div 
-          v-for="argument in th.arguments" 
-          :key="argument.aspect" 
+          v-for="group in groupedArguments" 
+          :key="group.aspect" 
           class="argument-group"
         >
-          <h4 class="argument-question clickable" @click="openArgumentModal(argument)">
-            {{ argument.aspect }}
+          <h4 
+            class="argument-question clickable"
+            @click="openArgumentModal(group)"
+          >
+            {{ group.aspect }}
           </h4>
-          
-          <!-- Цитаты -->
-          <div v-if="argument.quotes?.length" class="argument-quotes">
-            <h5 class="argument-subtitle">Цитаты:</h5>
-            <ul class="clean argument-list">
-              <li 
-                v-for="(quote, index) in argument.quotes" 
-                :key="`quote-${index}`" 
-                class="argument-item quote-item"
-              >
-                <span class="argument-quote">«{{ quote }}»</span>
-              </li>
-            </ul>
-          </div>
-          
-          <!-- Примеры -->
-          <div v-if="argument.examples?.length" class="argument-examples">
-            <h5 class="argument-subtitle">Примеры из текста:</h5>
-            <ul class="clean argument-list">
-              <li 
-                v-for="(example, index) in argument.examples" 
-                :key="`example-${index}`" 
-                class="argument-item example-item"
-              >
-                {{ example }}
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>
   </section>
   <section v-else class="not-found small">Тема не найдена.</section>
 
-  <!-- Модальное окно для аргумента -->
+  <!-- Модальное окно для аргументов группы -->
   <div v-if="showArgumentModal" class="modal-overlay" @click="closeArgumentModal">
     <div class="modal-content" @click.stop>
       <button class="modal-close" @click="closeArgumentModal">×</button>
-      <h3 class="modal-title">{{ selectedArgument?.aspect }}</h3>
+      <h3 class="modal-title">{{ selectedGroup?.aspect }}</h3>
       <div class="modal-body">
-        <div class="argument-text" v-if="selectedArgument?.essay_argument">
-          <h4>Пример аргумента для сочинения:</h4>
-          <p>{{ selectedArgument.essay_argument }}</p>
+        <div 
+          v-for="(argument, index) in selectedGroup?.arguments" 
+          :key="index"
+          class="argument-item"
+        >
+          <div v-if="argument.examples?.length" class="argument-section">
+            <h4>Аргумент {{ index + 1 }}:</h4>
+            <div class="argument-examples">
+              <p v-for="(example, exampleIndex) in argument.examples" :key="exampleIndex" class="example-item">
+                {{ example }}
+              </p>
+            </div>
+          </div>
+          <div v-if="argument.quotes?.length" class="argument-section">
+            <h4>Цитаты:</h4>
+            <div class="argument-quotes">
+              <div v-for="(quote, quoteIndex) in argument.quotes" :key="quoteIndex" class="quote-item">
+                "{{ quote }}"
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -109,23 +102,40 @@ const { loadAll, themesById, heroesById, eventsById } = useData()
 
 // Состояние для модального окна
 const showArgumentModal = ref(false)
-const selectedArgument = ref(null)
+const selectedGroup = ref(null)
 
 onMounted(loadAll)
 
 const th = computed(() => themesById.value[route.params.id])
 
+// Группируем аргументы по вопросам (aspect)
+const groupedArguments = computed(() => {
+  if (!th.value?.arguments) return []
+  
+  const groups = {}
+  
+  th.value.arguments.forEach(argument => {
+    if (!groups[argument.aspect]) {
+      groups[argument.aspect] = {
+        aspect: argument.aspect,
+        arguments: []
+      }
+    }
+    groups[argument.aspect].arguments.push(argument)
+  })
+  
+  return Object.values(groups)
+})
+
 // Функции для работы с модальным окном
-const openArgumentModal = (argument) => {
-  selectedArgument.value = argument
+const openArgumentModal = (group) => {
+  selectedGroup.value = group
   showArgumentModal.value = true
-  // УБРАЛИ блокировку прокрутки body
 }
 
 const closeArgumentModal = () => {
   showArgumentModal.value = false
-  selectedArgument.value = null
-  // УБРАЛИ восстановление прокрутки body
+  selectedGroup.value = null
 }
 
 // Закрытие модального окна по ESC
@@ -260,110 +270,39 @@ onUnmounted(() => {
 .arguments-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .argument-group {
-  padding: 16px;
-  border-radius: 8px;
+  padding: 20px;
+  border-radius: 12px;
   background: rgba(67, 40, 24, 0.1);
-  border-left: 3px solid var(--peach);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-left: 4px solid var(--peach);
+  transition: all 0.3s ease;
 }
 
 .argument-group:hover {
+  background: rgba(67, 40, 24, 0.15);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .argument-question {
-  font-size: 18px;
+  font-size: 20px;
   color: var(--peach);
-  margin: 0 0 16px;
+  margin: 0;
   font-weight: 600;
-}
-
-.clickable {
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
-.clickable:hover {
-  color: #ffb86c; /* Более светлый оттенок peach */
+.argument-question:hover {
+  color: #ffb86c;
   text-decoration: underline;
 }
 
-.argument-subtitle {
-  font-size: 16px;
-  color: var(--peach);
-  margin: 0 0 8px;
-  font-weight: 500;
-  opacity: 0.9;
-}
-
-.argument-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 16px 0;
-}
-
-.argument-item {
-  margin: 8px 0;
-  padding: 10px;
-  border-radius: 6px;
-  line-height: 1.5;
-}
-
-.quote-item {
-  background: rgba(187, 148, 87, 0.1);
-  border: 1px solid rgba(187, 148, 87, 0.2);
-}
-
-.example-item {
-  background: rgba(67, 40, 24, 0.15);
-  border-left: 2px solid rgba(153, 88, 42, 0.5);
-}
-
-.argument-quote {
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* Стили для цитат */
-.quotes-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.quote-item {
-  margin: 12px 0;
-  padding: 12px;
-  background: rgba(187, 148, 87, 0.1);
-  border-radius: 8px;
-  border-left: 3px solid var(--peach);
-}
-
-.quote-text {
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.5;
-}
-
-/* Стили для ссылок на текст */
-.text-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.text-link {
-  background: rgba(67, 40, 24, 0.3);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: monospace;
-  color: rgba(255, 255, 255, 0.8);
+.clickable {
+  cursor: pointer;
 }
 
 .not-found {
@@ -381,11 +320,11 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* Изменили на flex-start для возможности прокрутки */
+  align-items: flex-start;
   z-index: 1000;
   padding: 20px;
   backdrop-filter: blur(5px);
-  overflow-y: auto; /* Добавили прокрутку для оверлея */
+  overflow-y: auto;
 }
 
 .modal-content {
@@ -394,11 +333,10 @@ onUnmounted(() => {
   padding: 24px;
   max-width: 700px;
   width: 100%;
-  margin: 40px auto; /* Добавили отступ сверху и снизу */
+  margin: 40px auto;
   position: relative;
   border: 1px solid var(--line);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  /* УБРАЛИ фиксированную высоту и overflow-y: auto */
 }
 
 .modal-close {
@@ -417,7 +355,7 @@ onUnmounted(() => {
   justify-content: center;
   border-radius: 50%;
   transition: background 0.2s ease;
-  z-index: 1001; /* Чтобы кнопка была поверх всего */
+  z-index: 1001;
 }
 
 .modal-close:hover {
@@ -434,42 +372,53 @@ onUnmounted(() => {
 .modal-body {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 30px;
 }
 
-.modal-body h4 {
+.argument-item {
+  padding: 20px;
+  border-radius: 8px;
+  background: rgba(67, 40, 24, 0.1);
+  border: 1px solid rgba(187, 148, 87, 0.2);
+}
+
+.argument-section h4 {
   color: var(--peach);
   margin: 0 0 12px 0;
   font-size: 18px;
+  border-bottom: 1px solid rgba(187, 148, 87, 0.3);
+  padding-bottom: 8px;
 }
 
-.argument-text p {
+.argument-examples p {
   line-height: 1.6;
-  margin: 0;
+  margin: 12px 0;
   text-align: justify;
 }
 
-.modal-body ul.clean {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.example-item {
+  background: rgba(67, 40, 24, 0.15);
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 6px;
+  border-left: 3px solid rgba(153, 88, 42, 0.5);
 }
 
-.modal-body .quote-item {
+.argument-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quote-item {
   background: rgba(187, 148, 87, 0.1);
-  padding: 10px;
+  padding: 12px;
   margin: 8px 0;
   border-radius: 6px;
   border-left: 3px solid var(--peach);
   font-style: italic;
-}
-
-.modal-body .example-item {
-  background: rgba(67, 40, 24, 0.15);
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 6px;
-  border-left: 3px solid rgba(153, 88, 42, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
 }
 
 @media (min-width: 600px) {
@@ -502,11 +451,7 @@ onUnmounted(() => {
   }
 
   .argument-question {
-    font-size: 19px;
-  }
-
-  .argument-subtitle {
-    font-size: 17px;
+    font-size: 22px;
   }
 
   .modal-content {
@@ -534,15 +479,15 @@ onUnmounted(() => {
   .arguments-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    gap: 20px;
   }
 
   .argument-group {
-    padding: 20px;
+    padding: 24px;
   }
 
   .argument-question {
-    font-size: 20px;
+    font-size: 24px;
   }
 
   .modal-content {
@@ -553,11 +498,11 @@ onUnmounted(() => {
 /* Медиа-запрос для очень высоких экранов */
 @media (min-height: 800px) {
   .modal-overlay {
-    align-items: center; /* На высоких экранах центрируем по вертикали */
+    align-items: center;
   }
   
   .modal-content {
-    margin: 20px auto; /* Уменьшаем отступы на высоких экранах */
+    margin: 20px auto;
   }
 }
 </style>
